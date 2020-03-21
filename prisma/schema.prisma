@@ -16,24 +16,31 @@ generator typegraphql {
 }
 
 model User {
-  id        Int      @id
-  createdAt DateTime @default(now())
-  email     String   @unique
-  name      String?
-  role      Role     @default(USER)
-  posts     Post[]
-}
-
-model Post {
-  id        Int      @id
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  author    User
-  title     String
-  published Boolean  @default(false)
+  id           String   @id @default(uuid())
+  name         String?
+  email        String   @unique
+  password     String
+  role         Role     @default(USER)
+  posts        Post[]
+  refreshToken String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 enum Role {
-  USER
-  ADMIN
+  USER ADMIN
+}
+
+model Post {
+  id        String   @id @default(uuid())
+  title     String
+  author    User
+  category  Category @default(OTHER)
+  published Boolean
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Category {
+  CAREER EDUCATION FINANCE FITNESS FOOD GAMING HEALTH NATURE OTHER PETS SPORTS TECHNOLOGY
 }

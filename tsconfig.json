@@ -13,7 +13,6 @@
         "strictNullChecks": true,
         "strictFunctionTypes": true,
         "noImplicitThis": true,
-        "noUnusedLocals": true,
         "noUnusedParameters": true,
         "noImplicitReturns": true,
         "noFallthroughCasesInSwitch": true,
@@ -23,9 +22,7 @@
         "skipLibCheck": true,
         "baseUrl": "./src",
         "paths": {
-            "@authentication/*": ["authentication/*"],
             "@entities/*": ["entities/*"],
-            "@generated/*": ["generated/*"],
             "@resolvers/*": ["resolvers/*"],
             "@utils/*": ["utils/*"]
         }

@@ -13,8 +13,20 @@
         "prettier": "prettier \"./**/*.{ts,yml,yaml}\" -l --ignore-path .eslintignore",
         "prettier:fix": "prettier \"./**/*.{ts,yml,yaml}\" --write --ignore-path .eslintignore"
     },
+    "dependencies": {
+        "@prisma/client": "^2.0.0-preview024",
+        "apollo-server": "^2.11.0",
+        "graphql": "^14.6.0",
+        "jsonwebtoken": "^8.5.1",
+        "lodash": "^4.17.15",
+        "reflect-metadata": "^0.1.13",
+        "type-graphql": "^0.17.6"
+    },
     "devDependencies": {
+        "@typescript-eslint/eslint-plugin": "^2.24.0",
+        "@typescript-eslint/parser": "^2.24.0",
         "eslint": "^6.8.0",
+        "eslint-plugin-graphql": "^3.1.1",
         "nodemon": "^2.0.2",
         "prettier": "^1.19.1",
         "prisma2": "^2.0.0-preview024",
@@ -27,8 +39,5 @@
         "trailingComma": "all",
         "tabWidth": 4,
         "singleQuote": true
-    },
-    "dependencies": {
-        "@prisma/client": "^2.0.0-preview024"
     }
 }

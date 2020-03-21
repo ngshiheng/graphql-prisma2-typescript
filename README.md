@@ -10,12 +10,29 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/ngshiheng/graphql-prisma2-typescript/blob/master/LICENSE)
 
-A GraphQL, Prisma 2, TypeScript server boilerplate with authentication setup
+A GraphQL, Prisma 2, TypeScript server boilerplate
 
 # Tech Stacks
 
 -   [prisma2](https://github.com/prisma/prisma2/)
 -   [typescript](https://www.typescriptlang.org/)
+-   [typegraphql-prisma](https://www.npmjs.com/package/typegraphql-prisma)
+
+# Getting Started
+
+## Installing dependencies
+
+```bash
+yarn install
+```
+
+## Setting up PostgreSQL
+
+_Assuming you have a running PostgreSQL instance on port:5432 & `psql` installed:_
+
+1. `createdb <database-name>`
+2. `yarn prisma2 migrate save --name '<migration-message>' --experimental`
+3. `yarn prisma2 migrate up --experimental`
 
 # Contributing
 
