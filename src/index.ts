@@ -1,27 +1,14 @@
 import { PrismaClient } from '@prisma/client';
+import { UserResolver } from '@resolvers/User.resolver';
 import { ApolloServer } from 'apollo-server';
 import { resolve } from 'path';
 import 'reflect-metadata';
 import { buildSchema } from 'type-graphql';
-import {
-    PostCrudResolver,
-    PostRelationsResolver,
-    UserCrudResolver,
-    UserRelationsResolver,
-} from '../prisma/generated/type-graphql';
-
-interface Context {
-    prisma: PrismaClient;
-}
+import { User } from '../prisma/generated/type-graphql';
 
 const main = async () => {
     const schema = await buildSchema({
-        resolvers: [
-            UserRelationsResolver,
-            UserCrudResolver,
-            PostRelationsResolver,
-            PostCrudResolver,
-        ],
+        resolvers: [User, UserResolver],
         emitSchemaFile: resolve(__dirname, 'schema/generated-schema.graphql'),
         validate: false,
     });
@@ -30,7 +17,7 @@ const main = async () => {
     const server = new ApolloServer({
         schema,
         playground: true,
-        context: (request): Context => ({ ...request, prisma }),
+        context: request => ({ prisma, ...request }),
     });
     await server.listen(process.env.PORT);
     console.log(`🚀 Server is running on http://localhost:${process.env.PORT}`);

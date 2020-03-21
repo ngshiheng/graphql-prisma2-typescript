@@ -16,13 +16,13 @@ generator typegraphql {
 }
 
 model User {
-  id           String   @id @default(uuid())
+  id           String   @id @default(cuid())
   name         String?
   email        String   @unique
   password     String
   role         Role     @default(USER)
   posts        Post[]
-  refreshToken String
+  refreshToken String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
@@ -32,7 +32,7 @@ enum Role {
 }
 
 model Post {
-  id        String   @id @default(uuid())
+  id        String   @id @default(cuid())
   title     String
   author    User
   category  Category @default(OTHER)

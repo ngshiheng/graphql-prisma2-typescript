@@ -3,6 +3,11 @@
 # !!!   DO NOT MODIFY THIS FILE BY YOURSELF   !!!
 # -----------------------------------------------
 
+type AuthPayload {
+  token: String!
+  refreshToken: String
+}
+
 type BatchPayload {
   count: Int!
 }
@@ -63,6 +68,8 @@ type Mutation {
   deleteManyUser(where: UserWhereInput): BatchPayload!
   updateManyUser(data: UserUpdateManyMutationInput!, where: UserWhereInput): BatchPayload!
   upsertOneUser(where: UserWhereUniqueInput!, create: UserCreateInput!, update: UserUpdateInput!): User!
+  login(email: String!, password: String!): AuthPayload!
+  register(input: UserCreateInput!): User!
 }
 
 input NullableStringFilter {
@@ -135,7 +142,7 @@ input PostOrderByInput {
 }
 
 input PostScalarWhereInput {
-  id: UUIDFilter
+  id: StringFilter
   title: StringFilter
   category: CategoryFilter
   published: BooleanFilter
@@ -212,7 +219,7 @@ input PostUpsertWithWhereUniqueWithoutAuthorInput {
 }
 
 input PostWhereInput {
-  id: UUIDFilter
+  id: StringFilter
   title: StringFilter
   category: CategoryFilter
   published: BooleanFilter
@@ -267,7 +274,7 @@ type User {
   email: String!
   password: String!
   role: Role!
-  refreshToken: String!
+  refreshToken: String
   createdAt: DateTime!
   updatedAt: DateTime!
   posts(where: PostWhereInput, orderBy: PostOrderByInput, skip: Int, after: PostWhereUniqueInput, before: PostWhereUniqueInput, first: Int, last: Int): [Post!]
@@ -278,8 +285,8 @@ input UserCreateInput {
   name: String
   email: String!
   password: String!
-  role: Role!
-  refreshToken: String!
+  role: Role
+  refreshToken: String
   createdAt: DateTime
   updatedAt: DateTime
   posts: PostCreateManyWithoutAuthorInput
@@ -295,8 +302,8 @@ input UserCreateWithoutPostsInput {
   name: String
   email: String!
   password: String!
-  role: Role!
-  refreshToken: String!
+  role: Role
+  refreshToken: String
   createdAt: DateTime
   updatedAt: DateTime
 }
@@ -359,13 +366,13 @@ input UserUpsertWithoutPostsInput {
 }
 
 input UserWhereInput {
-  id: UUIDFilter
+  id: StringFilter
   name: NullableStringFilter
   email: StringFilter
   password: StringFilter
   role: RoleFilter
   posts: PostFilter
-  refreshToken: StringFilter
+  refreshToken: NullableStringFilter
   createdAt: DateTimeFilter
   updatedAt: DateTimeFilter
   AND: [UserWhereInput!]
@@ -376,18 +383,4 @@ input UserWhereInput {
 input UserWhereUniqueInput {
   id: String
   email: String
-}
-
-input UUIDFilter {
-  equals: String
-  not: String
-  in: [String!]
-  notIn: [String!]
-  lt: String
-  lte: String
-  gt: String
-  gte: String
-  contains: String
-  startsWith: String
-  endsWith: String
 }

@@ -16,6 +16,7 @@
     "dependencies": {
         "@prisma/client": "^2.0.0-preview024",
         "apollo-server": "^2.11.0",
+        "bcryptjs": "^2.4.3",
         "graphql": "^14.6.0",
         "jsonwebtoken": "^8.5.1",
         "lodash": "^4.17.15",
@@ -23,6 +24,8 @@
         "type-graphql": "^0.17.6"
     },
     "devDependencies": {
+        "@types/bcryptjs": "^2.4.2",
+        "@types/jsonwebtoken": "^8.3.8",
         "@typescript-eslint/eslint-plugin": "^2.24.0",
         "@typescript-eslint/parser": "^2.24.0",
         "eslint": "^6.8.0",
