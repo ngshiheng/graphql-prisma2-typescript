@@ -1,0 +1,34 @@
+{
+    "name": "graphql-prisma2-typescript",
+    "version": "1.0.0",
+    "description": "Just another GraphQL server boilerplate, with Prisma 2",
+    "main": "index.js",
+    "repository": "git@github.com:ngshiheng/graphql-prisma2-typescript.git",
+    "author": "Jerry Ng <ngshiheng@gmail.com>",
+    "license": "MIT",
+    "scripts": {
+        "start": "nodemon -e ts -x ts-node -r tsconfig-paths/register src/index.ts",
+        "eslint": "eslint . --ext ts,gql --ignore-path .eslintignore",
+        "eslint:fix:": "eslint --fix . --ext ts,gql --ignore-path .eslintignore",
+        "prettier": "prettier \"./**/*.{ts,yml,yaml}\" -l --ignore-path .eslintignore",
+        "prettier:fix": "prettier \"./**/*.{ts,yml,yaml}\" --write --ignore-path .eslintignore"
+    },
+    "devDependencies": {
+        "eslint": "^6.8.0",
+        "nodemon": "^2.0.2",
+        "prettier": "^1.19.1",
+        "prisma2": "^2.0.0-preview024",
+        "ts-node": "^8.7.0",
+        "tsconfig-paths": "^3.9.0",
+        "typegraphql-prisma": "^0.1.7",
+        "typescript": "^3.8.3"
+    },
+    "prettier": {
+        "trailingComma": "all",
+        "tabWidth": 4,
+        "singleQuote": true
+    },
+    "dependencies": {
+        "@prisma/client": "^2.0.0-preview024"
+    }
+}
