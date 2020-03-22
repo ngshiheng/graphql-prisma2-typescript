@@ -4,11 +4,10 @@ import { ApolloServer } from 'apollo-server';
 import { resolve } from 'path';
 import 'reflect-metadata';
 import { buildSchema } from 'type-graphql';
-import { User } from '../prisma/generated/type-graphql';
 
 const main = async () => {
     const schema = await buildSchema({
-        resolvers: [User, UserResolver],
+        resolvers: [UserResolver],
         emitSchemaFile: resolve(__dirname, 'schema/generated-schema.graphql'),
         validate: false,
     });
@@ -17,7 +16,7 @@ const main = async () => {
     const server = new ApolloServer({
         schema,
         playground: true,
-        context: request => ({ prisma, ...request }),
+        context: ({ req }) => ({ ...req, prisma }),
     });
     await server.listen(process.env.PORT);
     console.log(`🚀 Server is running on http://localhost:${process.env.PORT}`);
