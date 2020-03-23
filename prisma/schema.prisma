@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -8,11 +5,7 @@ datasource db {
 
 generator client {
   provider = "prisma-client-js"
-}
-
-generator typegraphql {
-  provider = "node_modules/typegraphql-prisma/generator.js"
-  output   = "../prisma/generated/type-graphql"
+  output   = "../src/generated/prisma-client"
 }
 
 model User {

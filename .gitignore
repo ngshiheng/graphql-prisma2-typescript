@@ -12,5 +12,5 @@ node_modules
 # Environment variables
 .env
 
-prisma/generated/
+generated/
 prisma/migrations/

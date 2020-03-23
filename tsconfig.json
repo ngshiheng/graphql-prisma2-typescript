@@ -22,6 +22,7 @@
         "skipLibCheck": true,
         "baseUrl": "./src",
         "paths": {
+            "@prisma/*": ["generated/prisma-client"],
             "@entities/*": ["entities/*"],
             "@resolvers/*": ["resolvers/*"],
             "@utils/*": ["utils/*"]

@@ -1,5 +1,4 @@
 import { PrismaClient } from '@prisma/client';
-import { UserResolver } from '@resolvers/User.resolver';
 import { ApolloServer } from 'apollo-server';
 import { resolve } from 'path';
 import 'reflect-metadata';
@@ -7,7 +6,7 @@ import { buildSchema } from 'type-graphql';
 
 const main = async () => {
     const schema = await buildSchema({
-        resolvers: [UserResolver],
+        resolvers: [__dirname + '/resolvers/**/*.{ts,js}'],
         emitSchemaFile: resolve(__dirname, 'schema/generated-schema.graphql'),
         validate: false,
     });
