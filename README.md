@@ -14,6 +14,7 @@ A GraphQL, Prisma 2, TypeScript server boilerplate
 
 # Tech Stacks
 
+-   [graphql](https://graphql.org/)
 -   [prisma2](https://github.com/prisma/prisma2/)
 -   [typescript](https://www.typescriptlang.org/)
 -   [typegraphql-prisma](https://www.npmjs.com/package/typegraphql-prisma)
