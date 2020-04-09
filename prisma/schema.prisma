@@ -9,31 +9,38 @@ generator client {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  name         String?
-  email        String   @unique
-  password     String
-  role         Role     @default(USER)
-  posts        Post[]
-  refreshToken String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-}
-
-enum Role {
-  USER ADMIN
+  id        String   @default(cuid()) @id
+  name      String?
+  email     String   @unique
+  password  String
+  isAdmin   Boolean  @default(false)
+  posts     Post[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Post {
-  id        String   @id @default(cuid())
+  id        String   @default(cuid()) @id
   title     String
-  author    User
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  String
   category  Category @default(OTHER)
-  published Boolean
+  published Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 enum Category {
-  CAREER EDUCATION FINANCE FITNESS FOOD GAMING HEALTH NATURE OTHER PETS SPORTS TECHNOLOGY
+  CAREER
+  EDUCATION
+  FINANCE
+  FITNESS
+  FOOD
+  GAMING
+  HEALTH
+  NATURE
+  OTHER
+  PETS
+  SPORTS
+  TECHNOLOGY
 }

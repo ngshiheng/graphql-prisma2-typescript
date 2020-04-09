@@ -5,23 +5,17 @@
 
 type AuthPayload {
   token: String!
-  refreshToken: String
 }
 
-type MessagePayload {
-  message: String!
-}
+"""
+The javascript `Date` as string. Type represents date and time as the ISO Date string.
+"""
+scalar DateTime
 
 type Mutation {
   register(email: String!, password: String!, name: String): User!
   login(email: String!, password: String!, name: String): AuthPayload!
-}
-
-type PageInfo {
-  hasNextPage: Boolean!
-  hasPreviousPage: Boolean!
-  startCursor: String!
-  endCursor: String!
+  deleteUser(id: String!): User!
 }
 
 type Post {
@@ -29,8 +23,8 @@ type Post {
   title: String!
   category: PostCategory!
   author: User!
-  createdAt: String!
-  updatedAt: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
 }
 
 enum PostCategory {
@@ -48,20 +42,9 @@ enum PostCategory {
   TECHNOLOGY
 }
 
-type PostConnection {
-  edges: [PostEdge!]!
-  pageInfo: PageInfo!
-  totalCount: Int!
-}
-
 input PostCreateInput {
   title: String!
   category: PostCategory!
-}
-
-type PostEdge {
-  node: Post!
-  cursor: String!
 }
 
 input PostUpdateInput {
@@ -71,39 +54,24 @@ input PostUpdateInput {
 
 type Query {
   user(id: String!): User!
+  users: [User!]!
 }
 
 type User {
   id: ID!
   name: String
   email: String!
-  role: UserRole!
-  posts: PostConnection!
-  createdAt: String!
-  updatedAt: String!
-}
-
-type UserConnection {
-  edges: [UserEdge!]!
-  pageInfo: PageInfo!
-  totalCount: Int!
+  isAdmin: Boolean!
+  posts: [Post!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
 }
 
 input UserCreateInput {
   email: String!
   password: String!
   name: String
-  role: UserRole!
-}
-
-type UserEdge {
-  node: User!
-  cursor: String!
-}
-
-enum UserRole {
-  ADMIN
-  USER
+  isAdmin: Boolean!
 }
 
 input UserUpdateInput {

@@ -1,14 +1,5 @@
-import {
-    AuthPayload,
-    User,
-    UserAuthenticationArgs,
-} from '@entities/User.entity';
-import {
-    ACCESS_TOKEN_EXPIRY,
-    ACCESS_TOKEN_SECRET,
-    REFRESH_TOKEN_EXPIRY,
-    REFRESH_TOKEN_SECRET,
-} from '@utils/constants';
+import { AuthPayload, User, UserRegisterArgs } from '@entities/User.entity';
+import { ACCESS_TOKEN_EXPIRY, ACCESS_TOKEN_SECRET } from '@utils/constants';
 import { Context } from '@utils/interfaces';
 import { compare, hash } from 'bcryptjs';
 import { sign } from 'jsonwebtoken';
@@ -25,10 +16,15 @@ export class UserResolvers {
         return user;
     }
 
+    @Query(() => [User])
+    async users(@Ctx() { prisma }: Context) {
+        return await prisma.user.findMany();
+    }
+
     @Mutation(() => User)
     async register(
         @Ctx() { prisma }: Context,
-        @Args() { email, password, name }: UserAuthenticationArgs,
+        @Args() { email, password, name }: UserRegisterArgs,
     ) {
         const userEmail = await prisma.user.findOne({ where: { email } });
         if (userEmail) {
@@ -47,7 +43,7 @@ export class UserResolvers {
     @Mutation(() => AuthPayload)
     async login(
         @Ctx() { prisma }: Context,
-        @Args() { email, password }: UserAuthenticationArgs,
+        @Args() { email, password }: UserRegisterArgs,
     ): Promise<AuthPayload> {
         const user = await prisma.user.findOne({ where: { email } });
         if (!user) {
@@ -57,23 +53,18 @@ export class UserResolvers {
         if (!isPasswordValid) {
             throw new Error('Incorrect password');
         }
-        const token = sign(
-            { userId: user.id, role: user.role },
-            ACCESS_TOKEN_SECRET,
-            {
-                expiresIn: ACCESS_TOKEN_EXPIRY,
-            },
-        );
-        const refreshToken = sign({ userId: user.id }, REFRESH_TOKEN_SECRET, {
-            expiresIn: REFRESH_TOKEN_EXPIRY,
+        const token = sign({ userId: user.id }, ACCESS_TOKEN_SECRET, {
+            expiresIn: ACCESS_TOKEN_EXPIRY,
         });
-        await prisma.user.update({
-            where: { email },
-            data: { refreshToken },
-        });
-        return {
-            token,
-            refreshToken,
-        };
+        return { token };
+    }
+
+    @Mutation(() => User)
+    async deleteUser(@Ctx() { prisma }: Context, @Arg('id') id: string) {
+        const user = await prisma.user.findOne({ where: { id } });
+        if (!user) {
+            throw new Error('User does not exist');
+        }
+        return await prisma.user.delete({ where: { id } });
     }
 }

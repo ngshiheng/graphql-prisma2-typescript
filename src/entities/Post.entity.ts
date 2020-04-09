@@ -1,4 +1,3 @@
-import { PageInfo } from '@entities/PageInfo';
 import { User } from '@entities/User.entity';
 import 'reflect-metadata';
 import {
@@ -25,11 +24,11 @@ export class Post {
     @Field(() => User)
     author: User;
 
-    @Field()
-    createdAt: string;
+    @Field(() => Date)
+    createdAt: Date;
 
-    @Field()
-    updatedAt: string;
+    @Field(() => Date)
+    updatedAt: Date;
 }
 
 @InputType()
@@ -48,27 +47,6 @@ export class PostUpdateInput implements Partial<Post> {
 
     @Field(() => Category, { nullable: true })
     category?: Category;
-}
-
-@ObjectType()
-export class PostEdge {
-    @Field()
-    node: Post;
-
-    @Field()
-    cursor: string;
-}
-
-@ObjectType()
-export class PostConnection {
-    @Field(() => [PostEdge])
-    edges: PostEdge[];
-
-    @Field()
-    pageInfo: PageInfo;
-
-    @Field(() => Int)
-    totalCount: number;
 }
 
 @ArgsType()
