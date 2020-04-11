@@ -1,24 +1,94 @@
-import { AuthPayload, User, UserRegisterArgs } from '@entities/User.entity';
-import { ACCESS_TOKEN_EXPIRY, ACCESS_TOKEN_SECRET } from '@utils/constants';
+import {
+    AuthPayload,
+    User,
+    UserCreateInput,
+    UserLoginArgs,
+    UserPaginationArgs,
+    UserRegisterArgs,
+    UserUpdateInput,
+} from '@entities/User.entity';
+import { Post } from '@prisma/*';
+import {
+    ACCESS_TOKEN_EXPIRY,
+    ACCESS_TOKEN_SECRET,
+    SALT_ROUNDS,
+} from '@utils/constants';
+import { getUserId } from '@utils/helpers';
 import { Context } from '@utils/interfaces';
+import { ApolloError } from 'apollo-server';
 import { compare, hash } from 'bcryptjs';
 import { sign } from 'jsonwebtoken';
-import { Arg, Args, Ctx, Mutation, Query, Resolver } from 'type-graphql';
+import {
+    Arg,
+    Args,
+    Ctx,
+    FieldResolver,
+    Mutation,
+    Query,
+    Resolver,
+    Root,
+} from 'type-graphql';
 
 @Resolver(User)
 export class UserResolvers {
     @Query(() => User)
+    async me(@Ctx() { prisma, req }: Context) {
+        const { userId }: any = await getUserId({ req, prisma });
+        return await prisma.user.findOne({ where: { id: userId } });
+    }
+
+    @Query(() => User)
     async user(@Ctx() { prisma }: Context, @Arg('id') id: string) {
         const user = await prisma.user.findOne({ where: { id } });
         if (!user) {
-            throw new Error('User does not exist');
+            throw new ApolloError('User does not exist');
         }
         return user;
     }
 
     @Query(() => [User])
-    async users(@Ctx() { prisma }: Context) {
-        return await prisma.user.findMany();
+    async users(
+        @Ctx() { prisma }: Context,
+        @Args()
+        {
+            orderBy,
+            skip,
+            after,
+            before,
+            first,
+            last,
+            filter,
+        }: UserPaginationArgs,
+    ) {
+        return await prisma.user.findMany({
+            where: { OR: [{ email: filter }, { name: filter }] },
+            skip,
+            first,
+            last,
+            after,
+            before,
+            orderBy,
+        });
+    }
+
+    @Mutation(() => User)
+    async createUser(
+        @Ctx() { prisma }: Context,
+        @Args() { email, password, name, isAdmin }: UserCreateInput,
+    ) {
+        const user = await prisma.user.findOne({ where: { email } });
+        if (user) {
+            throw new ApolloError('Email is already registered');
+        }
+        const hashedPassword = await hash(password, SALT_ROUNDS);
+        return await prisma.user.create({
+            data: {
+                name,
+                email,
+                password: hashedPassword,
+                isAdmin,
+            },
+        });
     }
 
     @Mutation(() => User)
@@ -26,11 +96,11 @@ export class UserResolvers {
         @Ctx() { prisma }: Context,
         @Args() { email, password, name }: UserRegisterArgs,
     ) {
-        const userEmail = await prisma.user.findOne({ where: { email } });
-        if (userEmail) {
-            throw new Error('Email is already registered');
+        const user = await prisma.user.findOne({ where: { email } });
+        if (user) {
+            throw new ApolloError('Email is already registered');
         }
-        const hashedPassword = await hash(password, 10);
+        const hashedPassword = await hash(password, SALT_ROUNDS);
         return await prisma.user.create({
             data: {
                 name,
@@ -43,15 +113,15 @@ export class UserResolvers {
     @Mutation(() => AuthPayload)
     async login(
         @Ctx() { prisma }: Context,
-        @Args() { email, password }: UserRegisterArgs,
+        @Args() { email, password }: UserLoginArgs,
     ): Promise<AuthPayload> {
         const user = await prisma.user.findOne({ where: { email } });
         if (!user) {
-            throw new Error('User does not exist'); // Note: Use ambiguous error message in production
+            throw new ApolloError('User does not exist'); // Note: Use ambiguous error message in production
         }
         const isPasswordValid = await compare(password, user.password);
         if (!isPasswordValid) {
-            throw new Error('Incorrect password');
+            throw new ApolloError('Incorrect password');
         }
         const token = sign({ userId: user.id }, ACCESS_TOKEN_SECRET, {
             expiresIn: ACCESS_TOKEN_EXPIRY,
@@ -60,11 +130,42 @@ export class UserResolvers {
     }
 
     @Mutation(() => User)
+    async updateUser(
+        @Ctx() { prisma }: Context,
+        @Arg('id') id: string,
+        @Arg('input') input: UserUpdateInput,
+    ) {
+        const user = await prisma.user.findOne({ where: { id } });
+        if (!user) {
+            throw new ApolloError('User does not exist');
+        }
+        return await prisma.user.update({
+            where: { id },
+            data: { ...input },
+        });
+    }
+
+    @Mutation(() => User)
     async deleteUser(@Ctx() { prisma }: Context, @Arg('id') id: string) {
         const user = await prisma.user.findOne({ where: { id } });
         if (!user) {
-            throw new Error('User does not exist');
+            throw new ApolloError('User does not exist');
         }
         return await prisma.user.delete({ where: { id } });
+    }
+
+    @Mutation(() => [User])
+    async deleteUsers(@Ctx() { prisma }: Context) {
+        const users = await prisma.user.findMany();
+        await prisma.user.deleteMany({});
+        return users;
+    }
+
+    @FieldResolver()
+    async posts(
+        @Ctx() { prisma }: Context,
+        @Root() { id }: User,
+    ): Promise<Post[]> {
+        return await prisma.user.findOne({ where: { id } }).posts();
     }
 }

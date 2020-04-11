@@ -15,7 +15,7 @@ const main = async () => {
     const server = new ApolloServer({
         schema,
         playground: true,
-        context: ({ req }) => ({ ...req, prisma }),
+        context: ({ req }) => ({ req, prisma }),
     });
     await server.listen(process.env.PORT);
     console.log(`🚀 Server is running on http://localhost:${process.env.PORT}`);

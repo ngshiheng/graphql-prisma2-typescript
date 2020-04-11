@@ -13,9 +13,18 @@ The javascript `Date` as string. Type represents date and time as the ISO Date s
 scalar DateTime
 
 type Mutation {
+  createPost(title: String!, category: PostCategory!, published: Boolean): Post!
+  createUser(email: String!, password: String!, name: String, isAdmin: Boolean): User!
   register(email: String!, password: String!, name: String): User!
-  login(email: String!, password: String!, name: String): AuthPayload!
+  login(email: String!, password: String!): AuthPayload!
+  updateUser(input: UserUpdateInput!, id: String!): User!
   deleteUser(id: String!): User!
+  deleteUsers: [User!]!
+}
+
+enum OrderByArg {
+  asc
+  desc
 }
 
 type Post {
@@ -23,6 +32,7 @@ type Post {
   title: String!
   category: PostCategory!
   author: User!
+  published: Boolean!
   createdAt: DateTime!
   updatedAt: DateTime!
 }
@@ -42,9 +52,13 @@ enum PostCategory {
   TECHNOLOGY
 }
 
-input PostCreateInput {
-  title: String!
-  category: PostCategory!
+input PostOrderByInput {
+  id: OrderByArg
+  title: OrderByArg
+  category: OrderByArg
+  published: OrderByArg
+  createdAt: OrderByArg
+  updatedAt: OrderByArg
 }
 
 input PostUpdateInput {
@@ -52,9 +66,17 @@ input PostUpdateInput {
   category: PostCategory
 }
 
+input PostWhereUniqueInput {
+  id: ID
+  title: String
+}
+
 type Query {
+  post(id: String!): Post!
+  posts(filter: String, skip: Float, orderBy: PostOrderByInput, after: PostWhereUniqueInput, before: PostWhereUniqueInput, first: Float, last: Float): [Post!]!
+  me: User!
   user(id: String!): User!
-  users: [User!]!
+  users(filter: String, skip: Float, orderBy: UserOrderByInput, after: UserWhereUniqueInput, before: UserWhereUniqueInput, first: Float, last: Float): [User!]!
 }
 
 type User {
@@ -62,19 +84,27 @@ type User {
   name: String
   email: String!
   isAdmin: Boolean!
-  posts: [Post!]!
+  posts: [Post!]
   createdAt: DateTime!
   updatedAt: DateTime!
 }
 
-input UserCreateInput {
-  email: String!
-  password: String!
-  name: String
-  isAdmin: Boolean!
+input UserOrderByInput {
+  id: OrderByArg
+  name: OrderByArg
+  email: OrderByArg
+  isAdmin: OrderByArg
+  createdAt: OrderByArg
+  updatedAt: OrderByArg
 }
 
 input UserUpdateInput {
+  email: String
   name: String
+  isAdmin: Boolean
+}
+
+input UserWhereUniqueInput {
+  id: ID
   email: String
 }

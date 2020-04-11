@@ -1,3 +1,4 @@
+import { OrderByArg } from '@entities/Generic.entity';
 import { User } from '@entities/User.entity';
 import 'reflect-metadata';
 import {
@@ -5,7 +6,6 @@ import {
     Field,
     ID,
     InputType,
-    Int,
     ObjectType,
     registerEnumType,
 } from 'type-graphql';
@@ -24,6 +24,9 @@ export class Post {
     @Field(() => User)
     author: User;
 
+    @Field()
+    published: boolean;
+
     @Field(() => Date)
     createdAt: Date;
 
@@ -31,13 +34,16 @@ export class Post {
     updatedAt: Date;
 }
 
-@InputType()
+@ArgsType()
 export class PostCreateInput implements Partial<Post> {
     @Field()
     title: string;
 
     @Field(() => Category)
     category: Category;
+
+    @Field({ nullable: true })
+    published?: boolean;
 }
 
 @InputType()
@@ -49,28 +55,58 @@ export class PostUpdateInput implements Partial<Post> {
     category?: Category;
 }
 
+@InputType()
+export class PostWhereUniqueInput implements Partial<Post> {
+    @Field(() => ID, { nullable: true })
+    id?: string;
+
+    @Field(() => String, { nullable: true })
+    title?: string;
+}
+
+@InputType()
+export class PostOrderByInput {
+    @Field(() => OrderByArg, { nullable: true })
+    id?: OrderByArg;
+
+    @Field(() => OrderByArg, { nullable: true })
+    title?: OrderByArg;
+
+    @Field(() => OrderByArg, { nullable: true })
+    category?: OrderByArg;
+
+    @Field(() => OrderByArg, { nullable: true })
+    published?: OrderByArg;
+
+    @Field(() => OrderByArg, { nullable: true })
+    createdAt?: OrderByArg;
+
+    @Field(() => OrderByArg, { nullable: true })
+    updatedAt?: OrderByArg;
+}
+
 @ArgsType()
 export class PostPaginationArgs {
     @Field(() => String, { nullable: true })
     filter?: string;
 
-    @Field(() => Int, { nullable: true })
+    @Field({ nullable: true })
     skip?: number;
-
-    @Field(() => String, { nullable: true })
-    after?: string;
-
-    @Field(() => String, { nullable: true })
-    before?: string;
-
-    @Field(() => Int, { nullable: true })
-    first?: number;
-
-    @Field(() => Int, { nullable: true })
-    last?: number;
 
     @Field(() => PostOrderByInput, { nullable: true })
     orderBy?: PostOrderByInput;
+
+    @Field(() => PostWhereUniqueInput, { nullable: true })
+    after?: PostWhereUniqueInput;
+
+    @Field(() => PostWhereUniqueInput, { nullable: true })
+    before?: PostWhereUniqueInput;
+
+    @Field({ nullable: true })
+    first?: number;
+
+    @Field({ nullable: true })
+    last?: number;
 }
 
 export enum Category {
@@ -89,18 +125,3 @@ export enum Category {
 }
 
 registerEnumType(Category, { name: 'PostCategory' });
-
-export enum PostOrderByInput {
-    id_ASC = 'id_ASC',
-    id_DESC = 'id_DESC',
-    title_ASC = 'title_ASC',
-    title_DESC = 'title_DESC',
-    category_ASC = 'category_ASC',
-    category_DESC = 'category_DESC',
-    createdAt_ASC = 'createdAt_ASC',
-    createdAt_DESC = 'createdAt_DESC',
-    updatedAt_ASC = 'updatedAt_ASC',
-    updatedAt_DESC = 'updatedAt_DESC',
-}
-
-registerEnumType(PostOrderByInput, { name: 'PostOrderByInput' });

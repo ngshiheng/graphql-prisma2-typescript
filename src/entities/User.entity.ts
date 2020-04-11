@@ -1,6 +1,7 @@
+import { OrderByArg } from '@entities/Generic.entity';
+import { Post } from '@entities/Post.entity';
 import 'reflect-metadata';
 import { ArgsType, Field, ID, InputType, ObjectType } from 'type-graphql';
-import { Post } from './Post.entity';
 
 @ObjectType()
 export class User {
@@ -16,7 +17,7 @@ export class User {
     @Field()
     isAdmin: boolean;
 
-    @Field(() => [Post])
+    @Field(() => [Post], { nullable: true })
     posts: Post[];
 
     @Field(() => Date)
@@ -32,7 +33,7 @@ export class AuthPayload {
     token: string;
 }
 
-@InputType()
+@ArgsType()
 export class UserCreateInput implements Partial<User> {
     @Field()
     email: string;
@@ -43,27 +44,93 @@ export class UserCreateInput implements Partial<User> {
     @Field({ nullable: true })
     name?: string;
 
+    @Field({ nullable: true })
+    isAdmin?: boolean;
+}
+
+@ArgsType()
+export class UserRegisterArgs implements Partial<User> {
     @Field()
-    isAdmin: boolean;
+    email: string;
+
+    @Field()
+    password: string;
+
+    @Field({ nullable: true })
+    name?: string;
+}
+
+@ArgsType()
+export class UserLoginArgs implements Partial<User> {
+    @Field()
+    email: string;
+
+    @Field()
+    password: string;
 }
 
 @InputType()
 export class UserUpdateInput implements Partial<User> {
     @Field({ nullable: true })
+    email?: string;
+
+    @Field({ nullable: true })
     name?: string;
 
     @Field({ nullable: true })
+    isAdmin?: boolean;
+}
+
+@InputType()
+export class UserWhereUniqueInput implements Partial<User> {
+    @Field(() => ID, { nullable: true })
+    id?: string;
+
+    @Field(() => String, { nullable: true })
     email?: string;
 }
 
+@InputType()
+export class UserOrderByInput {
+    @Field(() => OrderByArg, { nullable: true })
+    id?: OrderByArg;
+
+    @Field(() => OrderByArg, { nullable: true })
+    name?: OrderByArg;
+
+    @Field(() => OrderByArg, { nullable: true })
+    email?: OrderByArg;
+
+    @Field(() => OrderByArg, { nullable: true })
+    isAdmin?: OrderByArg;
+
+    @Field(() => OrderByArg, { nullable: true })
+    createdAt?: OrderByArg;
+
+    @Field(() => OrderByArg, { nullable: true })
+    updatedAt?: OrderByArg;
+}
+
 @ArgsType()
-export class UserRegisterArgs {
-    @Field(() => String)
-    email: string;
-
-    @Field(() => String)
-    password: string;
-
+export class UserPaginationArgs {
     @Field(() => String, { nullable: true })
-    name: string;
+    filter?: string;
+
+    @Field({ nullable: true })
+    skip?: number;
+
+    @Field(() => UserOrderByInput, { nullable: true })
+    orderBy?: UserOrderByInput;
+
+    @Field(() => UserWhereUniqueInput, { nullable: true })
+    after?: UserWhereUniqueInput;
+
+    @Field(() => UserWhereUniqueInput, { nullable: true })
+    before?: UserWhereUniqueInput;
+
+    @Field({ nullable: true })
+    first?: number;
+
+    @Field({ nullable: true })
+    last?: number;
 }
