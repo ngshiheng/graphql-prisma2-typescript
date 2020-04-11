@@ -4,8 +4,8 @@ import {
     PostPaginationArgs,
 } from '@entities/Post.entity';
 import { User } from '@entities/User.entity';
-import { getUserId } from '@utils/helpers';
-import { Context } from '@utils/interfaces';
+import { Context } from '@src/index';
+import { getUserId, Session } from '@utils/helpers';
 import { ApolloError } from 'apollo-server';
 import {
     Arg,
@@ -36,30 +36,24 @@ export class PostResolvers {
     async posts(
         @Ctx() { prisma }: Context,
         @Args()
-        { skip, after, before, first, last, filter }: PostPaginationArgs,
+        { filter, ...args }: PostPaginationArgs,
     ) {
         return await prisma.post.findMany({
             where: { OR: [{ title: filter }] },
-            skip,
-            first,
-            last,
-            after,
-            before,
+            ...args,
         });
     }
 
     @Mutation(() => Post)
     async createPost(
         @Ctx() { prisma, req }: Context,
-        @Args() { title, category, published }: PostCreateInput,
+        @Args() { ...inputs }: PostCreateInput,
     ): Promise<Partial<User>> {
-        const { userId }: any = await getUserId({ req, prisma });
+        const { userId }: Session = await getUserId({ req, prisma });
         return await prisma.post.create({
             data: {
                 author: { connect: { id: userId } },
-                title,
-                category,
-                published,
+                ...inputs,
             },
         });
     }

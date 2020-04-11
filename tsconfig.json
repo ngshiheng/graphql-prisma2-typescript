@@ -22,10 +22,11 @@
         "skipLibCheck": true,
         "baseUrl": "./src",
         "paths": {
+            "@src/*": ["./*"],
             "@prisma/*": ["generated/prisma-client"],
             "@entities/*": ["entities/*"],
             "@resolvers/*": ["resolvers/*"],
-            "@utils/*": ["utils/*"]
+            "@utils/*": ["utils/*"],
         }
     },
     "exclude": ["node_modules"],

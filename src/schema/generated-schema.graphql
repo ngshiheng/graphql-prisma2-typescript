@@ -68,7 +68,6 @@ input PostUpdateInput {
 
 input PostWhereUniqueInput {
   id: ID
-  title: String
 }
 
 type Query {

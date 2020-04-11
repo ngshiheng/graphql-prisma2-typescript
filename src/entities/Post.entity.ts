@@ -59,9 +59,6 @@ export class PostUpdateInput implements Partial<Post> {
 export class PostWhereUniqueInput implements Partial<Post> {
     @Field(() => ID, { nullable: true })
     id?: string;
-
-    @Field(() => String, { nullable: true })
-    title?: string;
 }
 
 @InputType()

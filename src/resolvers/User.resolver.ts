@@ -8,13 +8,13 @@ import {
     UserUpdateInput,
 } from '@entities/User.entity';
 import { Post } from '@prisma/*';
+import { Context } from '@src/index';
 import {
     ACCESS_TOKEN_EXPIRY,
     ACCESS_TOKEN_SECRET,
     SALT_ROUNDS,
 } from '@utils/constants';
-import { getUserId } from '@utils/helpers';
-import { Context } from '@utils/interfaces';
+import { getUserId, Session } from '@utils/helpers';
 import { ApolloError } from 'apollo-server';
 import { compare, hash } from 'bcryptjs';
 import { sign } from 'jsonwebtoken';
@@ -33,7 +33,7 @@ import {
 export class UserResolvers {
     @Query(() => User)
     async me(@Ctx() { prisma, req }: Context) {
-        const { userId }: any = await getUserId({ req, prisma });
+        const { userId }: Session = await getUserId({ req, prisma });
         return await prisma.user.findOne({ where: { id: userId } });
     }
 
@@ -50,31 +50,18 @@ export class UserResolvers {
     async users(
         @Ctx() { prisma }: Context,
         @Args()
-        {
-            orderBy,
-            skip,
-            after,
-            before,
-            first,
-            last,
-            filter,
-        }: UserPaginationArgs,
+        { filter, ...args }: UserPaginationArgs,
     ) {
         return await prisma.user.findMany({
             where: { OR: [{ email: filter }, { name: filter }] },
-            skip,
-            first,
-            last,
-            after,
-            before,
-            orderBy,
+            ...args,
         });
     }
 
     @Mutation(() => User)
     async createUser(
         @Ctx() { prisma }: Context,
-        @Args() { email, password, name, isAdmin }: UserCreateInput,
+        @Args() { email, password, ...inputs }: UserCreateInput,
     ) {
         const user = await prisma.user.findOne({ where: { email } });
         if (user) {
@@ -83,10 +70,9 @@ export class UserResolvers {
         const hashedPassword = await hash(password, SALT_ROUNDS);
         return await prisma.user.create({
             data: {
-                name,
                 email,
                 password: hashedPassword,
-                isAdmin,
+                ...inputs,
             },
         });
     }
@@ -94,7 +80,7 @@ export class UserResolvers {
     @Mutation(() => User)
     async register(
         @Ctx() { prisma }: Context,
-        @Args() { email, password, name }: UserRegisterArgs,
+        @Args() { email, password, ...args }: UserRegisterArgs,
     ) {
         const user = await prisma.user.findOne({ where: { email } });
         if (user) {
@@ -103,9 +89,9 @@ export class UserResolvers {
         const hashedPassword = await hash(password, SALT_ROUNDS);
         return await prisma.user.create({
             data: {
-                name,
                 email,
                 password: hashedPassword,
+                ...args,
             },
         });
     }
