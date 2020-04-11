@@ -9,7 +9,6 @@ export interface Session {
 }
 
 export const getUserId = async ({ req }: Context) => {
-    let result: Session;
     const authHeader = req.headers.authorization || '';
     const token = authHeader.replace('Bearer ', '');
     return verify(token, ACCESS_TOKEN_SECRET) as Session;

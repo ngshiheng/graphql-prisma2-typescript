@@ -120,8 +120,11 @@ export class UserResolvers {
         @Ctx() { prisma }: Context,
         @Arg('id') id: string,
         @Arg('input') input: UserUpdateInput,
-    ) {
-        const user = await prisma.user.findOne({ where: { id } });
+    ): Promise<Partial<Post>> {
+        const user = await prisma.user.findOne({
+            where: { id },
+            select: { id: true },
+        });
         if (!user) {
             throw new ApolloError('User does not exist');
         }
@@ -132,12 +135,17 @@ export class UserResolvers {
     }
 
     @Mutation(() => User)
-    async deleteUser(@Ctx() { prisma }: Context, @Arg('id') id: string) {
+    async deleteUser(@Ctx() { prisma, req }: Context, @Arg('id') id: string) {
+        const { userId }: Session = await getUserId({ req, prisma });
         const user = await prisma.user.findOne({ where: { id } });
         if (!user) {
             throw new ApolloError('User does not exist');
+        } else {
+            if (user.id === userId) {
+                return await prisma.user.delete({ where: { id } });
+            }
+            throw new ApolloError('You do not own this account');
         }
-        return await prisma.user.delete({ where: { id } });
     }
 
     @Mutation(() => [User])

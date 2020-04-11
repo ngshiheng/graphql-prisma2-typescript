@@ -2,6 +2,7 @@ import {
     Post,
     PostCreateInput,
     PostPaginationArgs,
+    PostUpdateInput,
 } from '@entities/Post.entity';
 import { User } from '@entities/User.entity';
 import { Context } from '@src/index';
@@ -56,6 +57,54 @@ export class PostResolvers {
                 ...inputs,
             },
         });
+    }
+
+    @Mutation(() => Post)
+    async updatePost(
+        @Ctx() { prisma, req }: Context,
+        @Arg('id') id: string,
+        @Arg('input') { ...inputs }: PostUpdateInput,
+    ) {
+        const { userId }: Session = await getUserId({ req, prisma });
+        const post = await prisma.post.findOne({
+            where: { id },
+        });
+        if (!post) {
+            throw new ApolloError('Post does not exist');
+        } else {
+            if (post.authorId === userId) {
+                return await prisma.post.update({
+                    where: { id },
+                    data: { ...inputs },
+                });
+            } else {
+                throw new ApolloError(
+                    'Access denied. You are not the author of the post',
+                );
+            }
+        }
+    }
+
+    @Mutation(() => Post)
+    async deletePost(@Ctx() { prisma, req }: Context, @Arg('id') id: string) {
+        const { userId }: Session = await getUserId({ req, prisma });
+        const post = await prisma.post.findOne({
+            where: { id },
+            select: { authorId: true },
+        });
+        if (!post) {
+            throw new ApolloError('Post does not exist');
+        } else {
+            if (post.authorId === userId) {
+                return await prisma.post.delete({
+                    where: { id },
+                });
+            } else {
+                throw new ApolloError(
+                    'Access denied. You are not the author of the post',
+                );
+            }
+        }
     }
 
     @FieldResolver()

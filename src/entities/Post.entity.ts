@@ -10,6 +10,23 @@ import {
     registerEnumType,
 } from 'type-graphql';
 
+export enum Category {
+    CAREER = 'CAREER',
+    EDUCATION = 'EDUCATION',
+    FINANCE = 'FINANCE',
+    FITNESS = 'FITNESS',
+    FOOD = 'FOOD',
+    GAMING = 'GAMING',
+    HEALTH = 'HEALTH',
+    NATURE = 'NATURE',
+    OTHER = 'OTHER',
+    PETS = 'PETS',
+    SPORTS = 'SPORTS',
+    TECHNOLOGY = 'TECHNOLOGY',
+}
+
+registerEnumType(Category, { name: 'PostCategory' });
+
 @ObjectType()
 export class Post {
     @Field(() => ID)
@@ -18,13 +35,13 @@ export class Post {
     @Field()
     title: string;
 
-    @Field(() => Category)
+    @Field(() => Category, { defaultValue: Category.OTHER })
     category: Category;
 
-    @Field(() => User)
+    @Field(() => User, { nullable: true })
     author: User;
 
-    @Field()
+    @Field({ defaultValue: false })
     published: boolean;
 
     @Field(() => Date)
@@ -53,6 +70,9 @@ export class PostUpdateInput implements Partial<Post> {
 
     @Field(() => Category, { nullable: true })
     category?: Category;
+
+    @Field({ nullable: true })
+    published?: boolean;
 }
 
 @InputType()
@@ -105,20 +125,3 @@ export class PostPaginationArgs {
     @Field({ nullable: true })
     last?: number;
 }
-
-export enum Category {
-    CAREER = 'CAREER',
-    EDUCATION = 'EDUCATION',
-    FINANCE = 'FINANCE',
-    FITNESS = 'FITNESS',
-    FOOD = 'FOOD',
-    GAMING = 'GAMING',
-    HEALTH = 'HEALTH',
-    NATURE = 'NATURE',
-    OTHER = 'OTHER',
-    PETS = 'PETS',
-    SPORTS = 'SPORTS',
-    TECHNOLOGY = 'TECHNOLOGY',
-}
-
-registerEnumType(Category, { name: 'PostCategory' });

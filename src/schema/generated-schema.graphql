@@ -14,6 +14,8 @@ scalar DateTime
 
 type Mutation {
   createPost(title: String!, category: PostCategory!, published: Boolean): Post!
+  updatePost(input: PostUpdateInput!, id: String!): Post!
+  deletePost(id: String!): Post!
   createUser(email: String!, password: String!, name: String, isAdmin: Boolean): User!
   register(email: String!, password: String!, name: String): User!
   login(email: String!, password: String!): AuthPayload!
@@ -30,9 +32,9 @@ enum OrderByArg {
 type Post {
   id: ID!
   title: String!
-  category: PostCategory!
-  author: User!
-  published: Boolean!
+  category: PostCategory
+  author: User
+  published: Boolean
   createdAt: DateTime!
   updatedAt: DateTime!
 }
@@ -64,6 +66,7 @@ input PostOrderByInput {
 input PostUpdateInput {
   title: String
   category: PostCategory
+  published: Boolean
 }
 
 input PostWhereUniqueInput {
