@@ -23,12 +23,12 @@
         "baseUrl": "./src",
         "paths": {
             "@src/*": ["./*"],
-            "@prisma/*": ["generated/prisma-client"],
+            "@utils/*": ["utils/*"],
             "@entities/*": ["entities/*"],
             "@resolvers/*": ["resolvers/*"],
-            "@utils/*": ["utils/*"],
+            "@prisma/*": ["generated/prisma-client"],
         }
     },
+    "include": ["./src/**/*.ts"],
     "exclude": ["node_modules"],
-    "include": ["./src/**/*.ts"]
 }

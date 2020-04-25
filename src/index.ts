@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client/index';
 import { ApolloServer } from 'apollo-server';
 import { Request } from 'express';
 import { resolve } from 'path';
@@ -13,7 +13,7 @@ export interface Context {
 const main = async () => {
     const schema = await buildSchema({
         resolvers: [__dirname + '/resolvers/**/*.{ts,js}'],
-        emitSchemaFile: resolve(__dirname, 'schema/generated-schema.graphql'),
+        emitSchemaFile: resolve(__dirname, 'schema/schema.graphql'),
         validate: false,
     });
 
