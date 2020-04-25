@@ -1,5 +1,5 @@
-import { OrderByArg } from '@entities/Generic.entity';
 import { User } from '@entities/User.entity';
+import { OrderByArg } from '@src/entities/Pagination.entity';
 import 'reflect-metadata';
 import {
     ArgsType,

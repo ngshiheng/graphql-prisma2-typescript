@@ -8,6 +8,7 @@
 
 <br />
 
+[![CircleCI](https://circleci.com/gh/ngshiheng/graphql-prisma2-typescript/tree/master.svg?style=svg)](https://circleci.com/gh/ngshiheng/graphql-prisma2-typescript/tree/master)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/ngshiheng/graphql-prisma2-typescript/blob/master/LICENSE)
 
 A GraphQL, Prisma 2, TypeScript server boilerplate
@@ -17,7 +18,7 @@ A GraphQL, Prisma 2, TypeScript server boilerplate
 -   [graphql](https://graphql.org/)
 -   [prisma2](https://github.com/prisma/prisma2/)
 -   [typescript](https://www.typescriptlang.org/)
--   [typegraphql-prisma](https://www.npmjs.com/package/typegraphql-prisma)
+-   [typegraphql](https://typegraphql.com/)
 
 # Getting Started
 
@@ -29,11 +30,19 @@ yarn install
 
 ## Setting up PostgreSQL
 
-_Assuming you have a running PostgreSQL instance on port:5432 & `psql` installed:_
+1. `yarn prisma migrate up --experimental`
 
-1. `createdb <database-name>`
-2. `yarn prisma2 migrate save --name '<migration-message>' --experimental`
-3. `yarn prisma2 migrate up --experimental`
+Run the commands below whenever you have an update in your `schema.prisma`
+
+1. `yarn prisma migrate save --name '<migration-message>' --experimental`
+2. `yarn prisma migrate up --experimental`
+3. `yarn prisma generate`
+
+## Setup Environment Variables
+
+1. Checkout `.env.example` and follow the instructions inside
+2. `export ACCESS_TOKEN_SECRET="your-own-secret"`
+3. `export ACCESS_TOKEN_EXPIRY="1h"`
 
 # Contributing
 

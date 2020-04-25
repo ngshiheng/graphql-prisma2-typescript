@@ -1,5 +1,5 @@
-import { OrderByArg } from '@entities/Generic.entity';
 import { Post } from '@entities/Post.entity';
+import { OrderByArg } from '@src/entities/Pagination.entity';
 import 'reflect-metadata';
 import { ArgsType, Field, ID, InputType, ObjectType } from 'type-graphql';
 

@@ -117,21 +117,26 @@ export class UserResolvers {
 
     @Mutation(() => User)
     async updateUser(
-        @Ctx() { prisma }: Context,
+        @Ctx() { prisma, req }: Context,
         @Arg('id') id: string,
         @Arg('input') input: UserUpdateInput,
     ): Promise<Partial<Post>> {
+        const { userId }: Session = await getUserId({ req, prisma });
         const user = await prisma.user.findOne({
             where: { id },
             select: { id: true },
         });
         if (!user) {
             throw new ApolloError('User does not exist');
+        } else {
+            if (user.id === userId) {
+                return await prisma.user.update({
+                    where: { id },
+                    data: { ...input },
+                });
+            }
+            throw new ApolloError('You do not own this account');
         }
-        return await prisma.user.update({
-            where: { id },
-            data: { ...input },
-        });
     }
 
     @Mutation(() => User)

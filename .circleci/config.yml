@@ -1,0 +1,25 @@
+version: 2.1
+jobs:
+    test-api:
+        environment:
+            PG_USER: $PG_USER
+            PG_DB: $PG_DB
+        description: 'Prettier, eslint & integration tests'
+        docker:
+            - image: circleci/node:12
+            - image: circleci/postgres:9.6-alpine-ram
+              environment:
+                  DATABASE_URL: postgresql://postgres@localhost:5432/circle_test
+        steps:
+            - checkout
+            - run: yarn
+            - run: yarn eslint
+            - run: yarn prettier
+            - run: dockerize -wait tcp://localhost:5432 -timeout 1m
+            - run: timeout 60 yarn prisma migrate up --experimental
+            - run: yarn test
+
+workflows:
+    build-and-test:
+        jobs:
+            - test-api
