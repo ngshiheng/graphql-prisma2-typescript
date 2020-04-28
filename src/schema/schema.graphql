@@ -12,6 +12,11 @@ The javascript `Date` as string. Type represents date and time as the ISO Date s
 """
 scalar DateTime
 
+type MessagePayload {
+  """Message that is returned to the user"""
+  message: String!
+}
+
 type Mutation {
   createPost(title: String!, category: PostCategory!, published: Boolean): Post!
   updatePost(input: PostUpdateInput!, id: String!): Post!
@@ -22,6 +27,8 @@ type Mutation {
   updateUser(input: UserUpdateInput!, id: String!): User!
   deleteUser(id: String!): User!
   deleteUsers: [User!]!
+  resetPassword(email: String!): MessagePayload!
+  updatePassword(password: String!): MessagePayload!
 }
 
 enum OrderByArg {

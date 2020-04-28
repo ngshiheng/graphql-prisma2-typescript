@@ -1,5 +1,6 @@
 import {
     AuthPayload,
+    MessagePayload,
     User,
     UserCreateInput,
     UserLoginArgs,
@@ -9,6 +10,7 @@ import {
 } from '@entities/User.entity';
 import { Post } from '@prisma/*';
 import { Context } from '@src/index';
+import { sendPasswordResetEmail } from '@src/utils/mailer';
 import {
     ACCESS_TOKEN_EXPIRY,
     ACCESS_TOKEN_SECRET,
@@ -17,7 +19,7 @@ import {
 import { getUserId, Session } from '@utils/helpers';
 import { ApolloError } from 'apollo-server';
 import { compare, hash } from 'bcryptjs';
-import { sign } from 'jsonwebtoken';
+import { sign, verify } from 'jsonwebtoken';
 import {
     Arg,
     Args,
@@ -28,6 +30,11 @@ import {
     Resolver,
     Root,
 } from 'type-graphql';
+
+export interface PasswordResetSession {
+    userEmail: string;
+    currentPassword: string;
+}
 
 @Resolver(User)
 export class UserResolvers {
@@ -158,6 +165,66 @@ export class UserResolvers {
         const users = await prisma.user.findMany();
         await prisma.user.deleteMany({});
         return users;
+    }
+
+    @Mutation(() => MessagePayload)
+    async resetPassword(
+        @Ctx() { prisma }: Context,
+        @Arg('email') email: string,
+    ): Promise<MessagePayload> {
+        const user = await prisma.user.findOne({ where: { email } });
+        if (!user) {
+            throw new ApolloError('User does not exist');
+        }
+        const token = sign(
+            { userEmail: email, currentPassword: user.password },
+            ACCESS_TOKEN_SECRET,
+            {
+                expiresIn: ACCESS_TOKEN_EXPIRY,
+            },
+        );
+        sendPasswordResetEmail(email, token);
+        return {
+            message: 'Password reset email sent. Please check your inbox',
+        };
+    }
+
+    @Mutation(() => MessagePayload)
+    async updatePassword(
+        @Ctx() { prisma, req }: Context,
+        @Arg('password') password: string,
+    ): Promise<MessagePayload> {
+        const authHeader = req.headers.authorization || '';
+        const token = authHeader.replace('Bearer ', '');
+        const { userEmail, currentPassword } = verify(
+            token,
+            ACCESS_TOKEN_SECRET,
+        ) as PasswordResetSession;
+        if (userEmail && currentPassword) {
+            const user = await prisma.user.findOne({
+                where: { email: userEmail },
+            });
+            if (!user) {
+                throw new ApolloError('User does not exist');
+            }
+            if (user.password === currentPassword) {
+                const hashedPassword = await hash(password, SALT_ROUNDS);
+                await prisma.user.update({
+                    where: { email: userEmail },
+                    data: { password: hashedPassword },
+                });
+                return {
+                    message:
+                        'Password reset successful. You may now login with your new password',
+                };
+            } else {
+                throw new ApolloError(
+                    'You may only reset your password once with the current token',
+                );
+            }
+        } else {
+            throw new ApolloError('asd');
+        }
     }
 
     @FieldResolver()

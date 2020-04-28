@@ -319,6 +319,7 @@ export type User = {
   email: string
   password: string
   isAdmin: boolean
+  refreshToken: string
   createdAt: Date
   updatedAt: Date
 }
@@ -330,6 +331,7 @@ export type UserSelect = {
   password?: boolean
   isAdmin?: boolean
   posts?: boolean | FindManyPostArgs
+  refreshToken?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
@@ -1175,6 +1177,7 @@ export type UserWhereInput = {
   password?: string | StringFilter | null
   isAdmin?: boolean | BooleanFilter | null
   posts?: PostFilter | null
+  refreshToken?: string | StringFilter | null
   createdAt?: Date | string | DateTimeFilter | null
   updatedAt?: Date | string | DateTimeFilter | null
   AND?: Enumerable<UserWhereInput> | null
@@ -1211,6 +1214,7 @@ export type UserCreateInput = {
   email: string
   password: string
   isAdmin?: boolean | null
+  refreshToken?: string | null
   createdAt?: Date | string | null
   updatedAt?: Date | string | null
   posts?: PostCreateManyWithoutAuthorInput | null
@@ -1281,6 +1285,7 @@ export type UserUpdateInput = {
   email?: string | null
   password?: string | null
   isAdmin?: boolean | null
+  refreshToken?: string | null
   createdAt?: Date | string | null
   updatedAt?: Date | string | null
   posts?: PostUpdateManyWithoutAuthorInput | null
@@ -1292,6 +1297,7 @@ export type UserUpdateManyMutationInput = {
   email?: string | null
   password?: string | null
   isAdmin?: boolean | null
+  refreshToken?: string | null
   createdAt?: Date | string | null
   updatedAt?: Date | string | null
 }
@@ -1302,6 +1308,7 @@ export type UserCreateWithoutPostsInput = {
   email: string
   password: string
   isAdmin?: boolean | null
+  refreshToken?: string | null
   createdAt?: Date | string | null
   updatedAt?: Date | string | null
 }
@@ -1327,6 +1334,7 @@ export type UserUpdateWithoutPostsDataInput = {
   email?: string | null
   password?: string | null
   isAdmin?: boolean | null
+  refreshToken?: string | null
   createdAt?: Date | string | null
   updatedAt?: Date | string | null
 }
@@ -1425,6 +1433,7 @@ export type UserOrderByInput = {
   email?: OrderByArg | null
   password?: OrderByArg | null
   isAdmin?: OrderByArg | null
+  refreshToken?: OrderByArg | null
   createdAt?: OrderByArg | null
   updatedAt?: OrderByArg | null
 }

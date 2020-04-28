@@ -33,6 +33,12 @@ export class AuthPayload {
     token: string;
 }
 
+@ObjectType()
+export class MessagePayload {
+    @Field({ description: 'Message that is returned to the user' })
+    message: string;
+}
+
 @ArgsType()
 export class UserCreateInput implements Partial<User> {
     @Field()
