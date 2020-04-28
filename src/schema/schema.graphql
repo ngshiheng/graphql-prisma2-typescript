@@ -5,6 +5,7 @@
 
 type AuthPayload {
   token: String!
+  refreshToken: String
 }
 
 """
@@ -13,7 +14,6 @@ The javascript `Date` as string. Type represents date and time as the ISO Date s
 scalar DateTime
 
 type MessagePayload {
-  """Message that is returned to the user"""
   message: String!
 }
 
@@ -29,6 +29,7 @@ type Mutation {
   deleteUsers: [User!]!
   resetPassword(email: String!): MessagePayload!
   updatePassword(password: String!): MessagePayload!
+  refreshLogin(refreshToken: String!): AuthPayload!
 }
 
 enum OrderByArg {

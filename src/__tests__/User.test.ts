@@ -1,7 +1,9 @@
 import { Context } from '@src/index';
+import { generateRandomAccessToken } from '@src/utils/helpers';
 import { ApolloServer } from 'apollo-server';
 import { createTestClient } from 'apollo-server-testing';
 import { Request } from 'express';
+import { internet } from 'faker';
 import gql from 'graphql-tag';
 import { join } from 'path';
 import 'reflect-metadata';
@@ -10,14 +12,13 @@ import { PrismaClient } from '../generated/prisma-client/index';
 
 const prisma = new PrismaClient();
 let id: string;
-let name: string = 'User.test.ts';
-let email: string = 'user-integration@test.com';
-const password: string = 'test-password-123';
+let name: string = internet.userName();
+let email: string = internet.email();
+const password: string = internet.password();
 let request: Partial<Request>;
-let unauthorizedRequest = {
+const unauthorizedRequest = {
     headers: {
-        authorization:
-            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjazlmano4ZnowMDAwdWRta21hOHBvZ2E5IiwiaWF0IjoxNTg3ODE1ODYwLCJleHAiOjE1ODc4MTY3NjB9.rQzhzoZq-1ckgs4LWCMTg2_ssJy3NR2Qyg-gqmxti4o',
+        authorization: `Bearer ${generateRandomAccessToken()}`,
     },
 };
 
@@ -38,6 +39,16 @@ const LOGIN = gql`
     mutation login($email: String!, $password: String!) {
         login(email: $email, password: $password) {
             token
+            refreshToken
+        }
+    }
+`;
+
+const REFRESH_LOGIN = gql`
+    mutation refreshLogin($refreshToken: String!) {
+        refreshLogin(refreshToken: $refreshToken) {
+            token
+            refreshToken
         }
     }
 `;
@@ -114,7 +125,45 @@ describe('Mutations', () => {
         const token = res.data?.login.token;
         expect(res.errors).toBeUndefined();
         expect(token).not.toBeUndefined();
+        expect(res.data?.login.refreshToken).not.toBeUndefined();
         request = { headers: { authorization: token } };
+    });
+    it('refreshLogin - Unauthorized user cannot refreshLogin', async () => {
+        const { server } = await constructTestServer(unauthorizedRequest);
+        const { mutate } = createTestClient(server);
+        const loginRes = await mutate({
+            mutation: LOGIN,
+            variables: {
+                email,
+                password,
+            },
+        });
+        const refreshToken = loginRes.data?.login.refreshToken;
+        const res = await mutate({
+            mutation: REFRESH_LOGIN,
+            variables: { refreshToken },
+        });
+        expect(res.data).toBeNull();
+        expect(res.errors).toHaveLength(1);
+    });
+    it('refreshLogin', async () => {
+        const { server } = await constructTestServer(request);
+        const { mutate } = createTestClient(server);
+        const loginRes = await mutate({
+            mutation: LOGIN,
+            variables: {
+                email,
+                password,
+            },
+        });
+        const refreshToken = loginRes.data?.login.refreshToken;
+        const res = await mutate({
+            mutation: REFRESH_LOGIN,
+            variables: { refreshToken },
+        });
+        expect(res.errors).toBeUndefined();
+        expect(res.data?.refreshLogin.token).not.toBeUndefined();
+        expect(res.data?.refreshLogin.refreshToken).not.toBeUndefined();
     });
     it('updateUser - Unauthorized user cannot update the user', async () => {
         const { server } = await constructTestServer(unauthorizedRequest);

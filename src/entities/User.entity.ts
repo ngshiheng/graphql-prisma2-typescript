@@ -31,11 +31,14 @@ export class User {
 export class AuthPayload {
     @Field()
     token: string;
+
+    @Field({ nullable: true })
+    refreshToken?: string;
 }
 
 @ObjectType()
 export class MessagePayload {
-    @Field({ description: 'Message that is returned to the user' })
+    @Field()
     message: string;
 }
 

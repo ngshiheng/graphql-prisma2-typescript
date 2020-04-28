@@ -1,9 +1,11 @@
 import { Context } from '@src/index';
 import { SALT_ROUNDS } from '@src/utils/constants';
+import { generateRandomAccessToken } from '@src/utils/helpers';
 import { ApolloServer } from 'apollo-server';
 import { createTestClient } from 'apollo-server-testing';
 import { hash } from 'bcryptjs';
 import { Request } from 'express';
+import { internet } from 'faker';
 import gql from 'graphql-tag';
 import { join } from 'path';
 import 'reflect-metadata';
@@ -13,9 +15,14 @@ import { PrismaClient } from '../generated/prisma-client/index';
 const prisma = new PrismaClient();
 let request: Partial<Request>;
 let postId: string;
-const name: string = 'Post.test.ts';
-const email: string = 'post-integration@test.com';
-const password: string = 'test-password-123';
+const name: string = internet.userName();
+const email: string = internet.email();
+const password: string = internet.password();
+const unauthorizedRequest = {
+    headers: {
+        authorization: `Bearer ${generateRandomAccessToken()}`,
+    },
+};
 
 const constructTestServer = async (request?: Partial<Request>) => {
     const schema = await buildSchema({
@@ -137,6 +144,21 @@ describe('Mutations', () => {
         });
         expect(res.data).toBeNull();
     });
+    it(`updatePost - Unauthorized user cannot update other user's post`, async () => {
+        const { server } = await constructTestServer(unauthorizedRequest);
+        const { mutate } = createTestClient(server);
+        const res = await mutate({
+            mutation: UPDATE_POST,
+            variables: {
+                id: postId,
+                input: {
+                    title: 'Title is changed to something else',
+                },
+            },
+        });
+        expect(res.data).toBeNull();
+        expect(res.errors).toHaveLength(1);
+    });
     it('updatePost', async () => {
         const { server } = await constructTestServer(request);
         const { mutate } = createTestClient(server);
@@ -154,6 +176,16 @@ describe('Mutations', () => {
             'Title is changed to something else',
         );
         expect(res.data?.updatePost.category).toBe('CAREER');
+    });
+    it(`deletePost - Unauthorized user cannot delete other user's post`, async () => {
+        const { server } = await constructTestServer(unauthorizedRequest);
+        const { mutate } = createTestClient(server);
+        const res = await mutate({
+            mutation: DELETE_POST,
+            variables: { id: postId },
+        });
+        expect(res.data).toBeNull();
+        expect(res.errors).toHaveLength(1);
     });
     it('deletePost', async () => {
         const { server } = await constructTestServer(request);

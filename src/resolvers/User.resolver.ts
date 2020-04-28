@@ -14,6 +14,8 @@ import { sendPasswordResetEmail } from '@src/utils/mailer';
 import {
     ACCESS_TOKEN_EXPIRY,
     ACCESS_TOKEN_SECRET,
+    REFRESH_TOKEN_EXPIRY,
+    REFRESH_TOKEN_SECRET,
     SALT_ROUNDS,
 } from '@utils/constants';
 import { getUserId, Session } from '@utils/helpers';
@@ -119,7 +121,14 @@ export class UserResolvers {
         const token = sign({ userId: user.id }, ACCESS_TOKEN_SECRET, {
             expiresIn: ACCESS_TOKEN_EXPIRY,
         });
-        return { token };
+        const refreshToken = sign({ userId: user.id }, REFRESH_TOKEN_SECRET, {
+            expiresIn: REFRESH_TOKEN_EXPIRY,
+        });
+        await prisma.user.update({
+            where: { email },
+            data: { refreshToken },
+        });
+        return { token, refreshToken };
     }
 
     @Mutation(() => User)
@@ -200,30 +209,62 @@ export class UserResolvers {
             token,
             ACCESS_TOKEN_SECRET,
         ) as PasswordResetSession;
-        if (userEmail && currentPassword) {
-            const user = await prisma.user.findOne({
+        const user = await prisma.user.findOne({
+            where: { email: userEmail },
+        });
+        if (!user) {
+            throw new ApolloError('User does not exist');
+        }
+        if (user.password === currentPassword) {
+            const hashedPassword = await hash(password, SALT_ROUNDS);
+            await prisma.user.update({
                 where: { email: userEmail },
+                data: { password: hashedPassword },
             });
-            if (!user) {
-                throw new ApolloError('User does not exist');
-            }
-            if (user.password === currentPassword) {
-                const hashedPassword = await hash(password, SALT_ROUNDS);
+            return {
+                message:
+                    'Password reset successful. You may now login with your new password',
+            };
+        } else {
+            throw new ApolloError(
+                'You may only reset your password once with the current token',
+            );
+        }
+    }
+
+    @Mutation(() => AuthPayload)
+    async refreshLogin(
+        @Ctx() { prisma, req }: Context,
+        @Arg('refreshToken') refreshToken: string,
+    ): Promise<AuthPayload> {
+        const { userId }: Session = await getUserId({ req, prisma });
+        const user = await prisma.user.findOne({ where: { id: userId } });
+        if (user?.refreshToken === refreshToken) {
+            const isValid = verify(refreshToken, REFRESH_TOKEN_SECRET);
+            if (isValid) {
+                const newAccessToken = sign({ userId }, ACCESS_TOKEN_SECRET, {
+                    expiresIn: ACCESS_TOKEN_EXPIRY,
+                });
+                const newRefreshToken = sign({ userId }, REFRESH_TOKEN_SECRET, {
+                    expiresIn: REFRESH_TOKEN_EXPIRY,
+                });
                 await prisma.user.update({
-                    where: { email: userEmail },
-                    data: { password: hashedPassword },
+                    where: { id: userId },
+                    data: { refreshToken: newRefreshToken },
                 });
                 return {
-                    message:
-                        'Password reset successful. You may now login with your new password',
+                    token: newAccessToken,
+                    refreshToken: newRefreshToken,
                 };
             } else {
                 throw new ApolloError(
-                    'You may only reset your password once with the current token',
+                    'Your refresh token has expired, please login again',
                 );
             }
         } else {
-            throw new ApolloError('asd');
+            throw new ApolloError(
+                'Your refresh token is invalid, please login again',
+            );
         }
     }
 
