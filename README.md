@@ -30,9 +30,11 @@ yarn install
 
 ## Setting up PostgreSQL
 
+To run migration:
+
 1. `yarn prisma migrate up --experimental`
 
-Run the commands below whenever you have an update in your `schema.prisma`
+On `schema.prisma` updates, run:
 
 1. `yarn prisma migrate save --name '<migration-message>' --experimental`
 2. `yarn prisma migrate up --experimental`
@@ -40,9 +42,11 @@ Run the commands below whenever you have an update in your `schema.prisma`
 
 ## Setup Environment Variables
 
-1. Checkout `.env.example` and follow the instructions inside
+1. Update `DATABASE_URL` accordingly inside `.env.example` and rename it to `.env`
 2. `export ACCESS_TOKEN_SECRET="your-own-secret"`
 3. `export ACCESS_TOKEN_EXPIRY="1h"`
+4. `export REFRESH_TOKEN_SECRET="another-secret"`
+5. `export REFRESH_TOKEN_EXPIRY="1d"`
 
 # Contributing
 

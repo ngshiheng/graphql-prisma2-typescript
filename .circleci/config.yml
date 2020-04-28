@@ -12,7 +12,7 @@ jobs:
                   DATABASE_URL: postgresql://postgres@localhost:5432/circle_test
         steps:
             - checkout
-            - run: yarn
+            - run: yarn install --frozen-lockfile
             - run: yarn eslint
             - run: yarn prettier
             - run: dockerize -wait tcp://localhost:5432 -timeout 1m
