@@ -34,7 +34,7 @@ To run migration:
 
 1. `yarn prisma migrate up --experimental`
 
-On `schema.prisma` updates, run:
+On `schema.prisma` update, run:
 
 1. `yarn prisma migrate save --name '<migration-message>' --experimental`
 2. `yarn prisma migrate up --experimental`
@@ -42,7 +42,7 @@ On `schema.prisma` updates, run:
 
 ## Setup Environment Variables
 
-1. Update `DATABASE_URL` accordingly inside `.env.example` and rename it to `.env`
+1. Update `DATABASE_URL` accordingly inside `.env.example` and rename the file to `.env`
 2. `export ACCESS_TOKEN_SECRET="your-own-secret"`
 3. `export ACCESS_TOKEN_EXPIRY="1h"`
 4. `export REFRESH_TOKEN_SECRET="another-secret"`
