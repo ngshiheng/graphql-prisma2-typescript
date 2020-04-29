@@ -20,13 +20,10 @@ jobs:
             - run: yarn test
     run-build:
         description: 'Build and push docker image to docker hub'
-        environment:
-            DOCKER_USERNAME: $DOCKER_USERNAME
-            DOCKER_PASSWORD: $DOCKER_PASSWORD
         docker:
             - image: cimg/base:2020.01
         steps:
-            - checkout
+            - setup_remote_docker
             - run: ./build.sh
 
 workflows:
