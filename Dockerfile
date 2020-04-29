@@ -6,7 +6,7 @@ COPY package.json yarn.lock ./
 
 RUN yarn install --frozen-lockfile
 
-COPY . /server/
+COPY . /graphql-prisma2-typescript/
 
 EXPOSE 4001
 
