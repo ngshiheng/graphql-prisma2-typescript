@@ -1,10 +1,10 @@
 version: 2.1
 jobs:
-    test-api:
+    run-test:
+        description: 'Prettier, eslint & integration tests'
         environment:
             PG_USER: $PG_USER
             PG_DB: $PG_DB
-        description: 'Prettier, eslint & integration tests'
         docker:
             - image: circleci/node:12
             - image: circleci/postgres:9.6-alpine-ram
@@ -18,8 +18,24 @@ jobs:
             - run: dockerize -wait tcp://localhost:5432 -timeout 1m
             - run: timeout 60 yarn prisma migrate up --experimental
             - run: yarn test
+    run-build:
+        description: 'Build and push docker image to docker hub'
+        environment:
+            DOCKER_USERNAME: $DOCKER_USERNAME
+            DOCKER_PASSWORD: $DOCKER_PASSWORD
+        docker:
+            - image: cimg/base:2020.01
+        steps:
+            - checkout
+            - run: ./build.sh
 
 workflows:
     build-and-test:
         jobs:
-            - test-api
+            - run-test
+            - run-build:
+                  requires:
+                      - run-test
+                  filters:
+                      branches:
+                          only: master
