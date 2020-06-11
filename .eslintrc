@@ -1,10 +1,4 @@
 {
-    "rules": {
-        "@typescript-eslint/class-name-casing": [
-            "error",
-            { "allowUnderscorePrefix": true }
-        ]
-    },
     "parser": "@typescript-eslint/parser",
     "plugins": ["graphql", "@typescript-eslint"],
     "env": {
