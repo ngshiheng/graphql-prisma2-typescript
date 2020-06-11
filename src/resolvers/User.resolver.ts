@@ -62,8 +62,10 @@ export class UserResolvers {
         { filter, ...args }: UserPaginationArgs,
     ) {
         return await prisma.user.findMany({
-            where: { OR: [{ email: filter }, { name: filter }] },
-            ...args,
+            where: {
+                OR: [{ email: filter }, { name: filter }],
+                ...args,
+            },
         });
     }
 

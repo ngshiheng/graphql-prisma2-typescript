@@ -40,8 +40,10 @@ export class PostResolvers {
         { filter, ...args }: PostPaginationArgs,
     ) {
         return await prisma.post.findMany({
-            where: { OR: [{ title: filter }] },
-            ...args,
+            where: {
+                OR: [{ title: filter }],
+                ...args,
+            },
         });
     }
 

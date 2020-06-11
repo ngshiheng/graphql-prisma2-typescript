@@ -7,6 +7,10 @@ import {
   PrismaClientRustPanicError,
   PrismaClientInitializationError,
   PrismaClientValidationError,
+  sqltag as sql,
+  empty,
+  join,
+  raw,
 } from './runtime';
 
 export { PrismaClientKnownRequestError }
@@ -16,8 +20,13 @@ export { PrismaClientInitializationError }
 export { PrismaClientValidationError }
 
 /**
- * Query Engine version: 2fb8f444d9cdf7c0beee7b041194b42d7a9ce1e6
- * Prisma Client JS version: 2.0.0-beta.3
+ * Re-export of sql-template-tag
+ */
+export { sql, empty, join, raw }
+
+/**
+ * Prisma Client JS version: 2.0.0
+ * Query Engine version: de2bc1cbdb5561ad73d2f08463fa2eec48993f56
  */
 export declare type PrismaVersion = {
   client: string
@@ -28,6 +37,25 @@ export declare const prismaVersion: PrismaVersion
 /**
  * Utility Types
  */
+
+/**
+ * From https://github.com/sindresorhus/type-fest/
+ * Matches a JSON object.
+ * This type can be useful to enforce some input to be JSON-compatible or as a super-type to be extended from. 
+ */
+declare type JsonObject = {[Key in string]?: JsonValue}
+ 
+/**
+ * From https://github.com/sindresorhus/type-fest/
+ * Matches a JSON array.
+ */
+declare interface JsonArray extends Array<JsonValue> {}
+ 
+/**
+ * From https://github.com/sindresorhus/type-fest/
+ * Matches any valid JSON value.
+ */
+declare type JsonValue = string | number | boolean | null | JsonObject | JsonArray
 
 declare type SelectAndInclude = {
   select: any
@@ -41,7 +69,6 @@ declare type HasSelect = {
 declare type HasInclude = {
   include: any
 }
-
 
 declare type CheckSelect<T, S, U> = T extends SelectAndInclude
   ? 'Please either choose `select` or `include`'
@@ -98,13 +125,32 @@ export type Datasources = {
 export type ErrorFormat = 'pretty' | 'colorless' | 'minimal'
 
 export interface PrismaClientOptions {
+  /**
+   * Overwrites the datasource url from your prisma.schema file
+   */
   datasources?: Datasources
 
   /**
-   * @default "pretty"
+   * @default "colorless"
    */
   errorFormat?: ErrorFormat
 
+  /**
+   * @example
+   * ```
+   * // Defaults to stdout
+   * log: ['query', 'info', 'warn', 'error']
+   * 
+   * // Emit as events
+   * log: [
+   *  { emit: 'stdout', level: 'query' },
+   *  { emit: 'stdout', level: 'info' },
+   *  { emit: 'stdout', level: 'warn' }
+   *  { emit: 'stdout', level: 'error' }
+   * ]
+   * ```
+   * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/logging#the-log-option).
+   */
   log?: Array<LogLevel | LogDefinition>
 
   /**
@@ -119,11 +165,6 @@ export interface PrismaClientOptions {
     }
     measurePerformance?: boolean
   }
-
-  /**
-   * Useful for pgbouncer
-   */
-  forceTransactions?: boolean
 }
 
 export type Hooks = {
@@ -131,14 +172,14 @@ export type Hooks = {
 }
 
 /* Types for Logging */
-export type LogLevel = 'info' | 'query' | 'warn'
+export type LogLevel = 'info' | 'query' | 'warn' | 'error'
 export type LogDefinition = {
   level: LogLevel
   emit: 'stdout' | 'event'
 }
 
 export type GetLogType<T extends LogLevel | LogDefinition> = T extends LogDefinition ? T['emit'] extends 'event' ? T['level'] : never : never
-export type GetEvents<T extends Array<LogLevel | LogDefinition>> = GetLogType<T[0]> | GetLogType<T[1]> | GetLogType<T[2]>
+export type GetEvents<T extends Array<LogLevel | LogDefinition>> = GetLogType<T[0]> | GetLogType<T[1]> | GetLogType<T[2]> | GetLogType<T[3]> 
 
 export type QueryEvent = {
   timestamp: Date
@@ -172,7 +213,10 @@ export declare function getLogLevel(log: Array<LogLevel | LogDefinition>): LogLe
  * 
  * Read more in our [docs](https://github.com/prisma/prisma/blob/master/docs/prisma-client-js/api.md).
  */
-export declare class PrismaClient<T extends PrismaClientOptions = {}, U = keyof T extends 'log' ? T['log'] extends Array<LogLevel | LogDefinition> ? GetEvents<T['log']> : never : never> {
+export declare class PrismaClient<
+  T extends PrismaClientOptions = PrismaClientOptions,
+  U = keyof T extends 'log' ? T['log'] extends Array<LogLevel | LogDefinition> ? GetEvents<T['log']> : never : never
+> {
   /**
    * @private
    */
@@ -221,7 +265,7 @@ export declare class PrismaClient<T extends PrismaClientOptions = {}, U = keyof 
    * Read more in our [docs](https://github.com/prisma/prisma/blob/master/docs/prisma-client-js/api.md).
    */
   constructor(optionsArg?: T);
-  on<V extends U>(eventType: V, callback: V extends never ? never : (event: V extends 'query' ? QueryEvent : LogEvent) => void): void;
+  on<V extends U>(eventType: V, callback: (event: V extends 'query' ? QueryEvent : LogEvent) => void): void;
   /**
    * Connect with the database
    */
@@ -234,23 +278,34 @@ export declare class PrismaClient<T extends PrismaClientOptions = {}, U = keyof 
    * Disconnect from the database
    */
   disconnect(): Promise<any>;
+
   /**
-   * Makes a raw query
+   * Executes a raw query and returns the number of affected rows
    * @example
    * ```
-   * // Fetch all entries from the `User` table
-   * const result = await prisma.raw`SELECT * FROM User;`
+   * // With parameters use prisma.executeRaw``, values will be escaped automatically
+   * const result = await prisma.executeRaw`UPDATE User SET cool = ${true} WHERE id = ${1};`
    * // Or
-   * const result = await prisma.raw('SELECT * FROM User;')
-   * 
-   * // With parameters use prisma.raw``, values will be escaped automatically
-   * const userId = '1'
-   * const result = await prisma.raw`SELECT * FROM User WHERE id = ${userId};`
+   * const result = await prisma.executeRaw('UPDATE User SET cool = $1 WHERE id = $2 ;', true, 1)
   * ```
   * 
   * Read more in our [docs](https://github.com/prisma/prisma/blob/master/docs/prisma-client-js/api.md#raw-database-access).
   */
-  raw<T = any>(query: string | TemplateStringsArray, ...values: any[]): Promise<T>;
+  executeRaw<T = any>(query: string | TemplateStringsArray, ...values: any[]): Promise<number>;
+
+  /**
+   * Performs a raw query and returns the SELECT data
+   * @example
+   * ```
+   * // With parameters use prisma.queryRaw``, values will be escaped automatically
+   * const result = await prisma.queryRaw`SELECT * FROM User WHERE id = ${1} OR email = ${'ema.il'};`
+   * // Or
+   * const result = await prisma.queryRaw('SELECT * FROM User WHERE id = $1 OR email = $2;', 1, 'ema.il')
+  * ```
+  * 
+  * Read more in our [docs](https://github.com/prisma/prisma/blob/master/docs/prisma-client-js/api.md#raw-database-access).
+  */
+  queryRaw<T = any>(query: string | TemplateStringsArray, ...values: any[]): Promise<T>;
 
   /**
    * `prisma.user`: Exposes CRUD operations for the **User** model.
@@ -347,7 +402,7 @@ export type UserGetPayload<
   ? User
   : S extends undefined
   ? never
-  : S extends FindManyUserArgs
+  : S extends UserArgs | FindManyUserArgs
   ? 'include' extends U
     ? User  & {
       [P in TrueKeys<S['include']>]:
@@ -388,7 +443,7 @@ export interface UserDelegate {
    * const users = await prisma.user.findMany()
    * 
    * // Get first 10 Users
-   * const users = await prisma.user.findMany({ first: 10 })
+   * const users = await prisma.user.findMany({ take: 10 })
    * 
    * // Only select the `id`
    * const userWithIdOnly = await prisma.user.findMany({ select: { id: true } })
@@ -582,31 +637,23 @@ export type FindManyUserArgs = {
   /**
    * Filter, which Users to fetch.
   **/
-  where?: UserWhereInput | null
+  where?: UserWhereInput
   /**
    * Determine the order of the Users to fetch.
   **/
-  orderBy?: UserOrderByInput | null
+  orderBy?: UserOrderByInput
+  /**
+   * Sets the position for listing Users.
+  **/
+  cursor?: UserWhereUniqueInput
+  /**
+   * The number of Users to fetch. If negative number, it will take Users before the `cursor`.
+  **/
+  take?: number
   /**
    * Skip the first `n` Users.
   **/
-  skip?: number | null
-  /**
-   * Get all Users that come after the User you provide with the current order.
-  **/
-  after?: UserWhereUniqueInput | null
-  /**
-   * Get all Users that come before the User you provide with the current order.
-  **/
-  before?: UserWhereUniqueInput | null
-  /**
-   * Get the first `n` Users.
-  **/
-  first?: number | null
-  /**
-   * Get the last `n` Users.
-  **/
-  last?: number | null
+  skip?: number
 }
 
 
@@ -657,7 +704,7 @@ export type UserUpdateArgs = {
  */
 export type UserUpdateManyArgs = {
   data: UserUpdateManyMutationInput
-  where?: UserWhereInput | null
+  where?: UserWhereInput
 }
 
 
@@ -711,7 +758,7 @@ export type UserDeleteArgs = {
  * User deleteMany
  */
 export type UserDeleteManyArgs = {
-  where?: UserWhereInput | null
+  where?: UserWhereInput
 }
 
 
@@ -767,7 +814,7 @@ export type PostGetPayload<
   ? Post
   : S extends undefined
   ? never
-  : S extends FindManyPostArgs
+  : S extends PostArgs | FindManyPostArgs
   ? 'include' extends U
     ? Post  & {
       [P in TrueKeys<S['include']>]:
@@ -808,7 +855,7 @@ export interface PostDelegate {
    * const posts = await prisma.post.findMany()
    * 
    * // Get first 10 Posts
-   * const posts = await prisma.post.findMany({ first: 10 })
+   * const posts = await prisma.post.findMany({ take: 10 })
    * 
    * // Only select the `id`
    * const postWithIdOnly = await prisma.post.findMany({ select: { id: true } })
@@ -1002,31 +1049,23 @@ export type FindManyPostArgs = {
   /**
    * Filter, which Posts to fetch.
   **/
-  where?: PostWhereInput | null
+  where?: PostWhereInput
   /**
    * Determine the order of the Posts to fetch.
   **/
-  orderBy?: PostOrderByInput | null
+  orderBy?: PostOrderByInput
+  /**
+   * Sets the position for listing Posts.
+  **/
+  cursor?: PostWhereUniqueInput
+  /**
+   * The number of Posts to fetch. If negative number, it will take Posts before the `cursor`.
+  **/
+  take?: number
   /**
    * Skip the first `n` Posts.
   **/
-  skip?: number | null
-  /**
-   * Get all Posts that come after the Post you provide with the current order.
-  **/
-  after?: PostWhereUniqueInput | null
-  /**
-   * Get all Posts that come before the Post you provide with the current order.
-  **/
-  before?: PostWhereUniqueInput | null
-  /**
-   * Get the first `n` Posts.
-  **/
-  first?: number | null
-  /**
-   * Get the last `n` Posts.
-  **/
-  last?: number | null
+  skip?: number
 }
 
 
@@ -1077,7 +1116,7 @@ export type PostUpdateArgs = {
  */
 export type PostUpdateManyArgs = {
   data: PostUpdateManyMutationInput
-  where?: PostWhereInput | null
+  where?: PostWhereInput
 }
 
 
@@ -1131,7 +1170,7 @@ export type PostDeleteArgs = {
  * Post deleteMany
  */
 export type PostDeleteManyArgs = {
-  where?: PostWhereInput | null
+  where?: PostWhereInput
 }
 
 
@@ -1157,76 +1196,76 @@ export type PostArgs = {
 
 
 export type PostWhereInput = {
-  id?: string | StringFilter | null
-  title?: string | StringFilter | null
-  authorId?: string | StringFilter | null
-  category?: Category | CategoryFilter | null
-  published?: boolean | BooleanFilter | null
-  createdAt?: Date | string | DateTimeFilter | null
-  updatedAt?: Date | string | DateTimeFilter | null
-  AND?: Enumerable<PostWhereInput> | null
-  OR?: Enumerable<PostWhereInput> | null
-  NOT?: Enumerable<PostWhereInput> | null
+  id?: string | StringFilter
+  title?: string | StringFilter
+  authorId?: string | StringFilter
+  category?: Category | CategoryFilter
+  published?: boolean | BooleanFilter
+  createdAt?: Date | string | DateTimeFilter
+  updatedAt?: Date | string | DateTimeFilter
+  AND?: Enumerable<PostWhereInput>
+  OR?: Array<PostWhereInput>
+  NOT?: Enumerable<PostWhereInput>
   author?: UserWhereInput | null
 }
 
 export type UserWhereInput = {
-  id?: string | StringFilter | null
+  id?: string | StringFilter
   name?: string | NullableStringFilter | null
-  email?: string | StringFilter | null
-  password?: string | StringFilter | null
-  isAdmin?: boolean | BooleanFilter | null
+  email?: string | StringFilter
+  password?: string | StringFilter
+  isAdmin?: boolean | BooleanFilter
   posts?: PostFilter | null
-  refreshToken?: string | StringFilter | null
-  createdAt?: Date | string | DateTimeFilter | null
-  updatedAt?: Date | string | DateTimeFilter | null
-  AND?: Enumerable<UserWhereInput> | null
-  OR?: Enumerable<UserWhereInput> | null
-  NOT?: Enumerable<UserWhereInput> | null
+  refreshToken?: string | StringFilter
+  createdAt?: Date | string | DateTimeFilter
+  updatedAt?: Date | string | DateTimeFilter
+  AND?: Enumerable<UserWhereInput>
+  OR?: Array<UserWhereInput>
+  NOT?: Enumerable<UserWhereInput>
 }
 
 export type UserWhereUniqueInput = {
-  id?: string | null
-  email?: string | null
+  id?: string
+  email?: string
 }
 
 export type PostWhereUniqueInput = {
-  id?: string | null
+  id?: string
 }
 
 export type PostCreateWithoutAuthorInput = {
-  id?: string | null
+  id?: string
   title: string
-  category?: Category | null
-  published?: boolean | null
-  createdAt?: Date | string | null
-  updatedAt?: Date | string | null
+  category?: Category
+  published?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type PostCreateManyWithoutAuthorInput = {
-  create?: Enumerable<PostCreateWithoutAuthorInput> | null
-  connect?: Enumerable<PostWhereUniqueInput> | null
+  create?: Enumerable<PostCreateWithoutAuthorInput>
+  connect?: Enumerable<PostWhereUniqueInput>
 }
 
 export type UserCreateInput = {
-  id?: string | null
+  id?: string
   name?: string | null
   email: string
   password: string
-  isAdmin?: boolean | null
-  refreshToken?: string | null
-  createdAt?: Date | string | null
-  updatedAt?: Date | string | null
+  isAdmin?: boolean
+  refreshToken?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
   posts?: PostCreateManyWithoutAuthorInput | null
 }
 
 export type PostUpdateWithoutAuthorDataInput = {
-  id?: string | null
-  title?: string | null
-  category?: Category | null
-  published?: boolean | null
-  createdAt?: Date | string | null
-  updatedAt?: Date | string | null
+  id?: string
+  title?: string
+  category?: Category
+  published?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type PostUpdateWithWhereUniqueWithoutAuthorInput = {
@@ -1235,25 +1274,25 @@ export type PostUpdateWithWhereUniqueWithoutAuthorInput = {
 }
 
 export type PostScalarWhereInput = {
-  id?: string | StringFilter | null
-  title?: string | StringFilter | null
-  authorId?: string | StringFilter | null
-  category?: Category | CategoryFilter | null
-  published?: boolean | BooleanFilter | null
-  createdAt?: Date | string | DateTimeFilter | null
-  updatedAt?: Date | string | DateTimeFilter | null
-  AND?: Enumerable<PostScalarWhereInput> | null
-  OR?: Enumerable<PostScalarWhereInput> | null
-  NOT?: Enumerable<PostScalarWhereInput> | null
+  id?: string | StringFilter
+  title?: string | StringFilter
+  authorId?: string | StringFilter
+  category?: Category | CategoryFilter
+  published?: boolean | BooleanFilter
+  createdAt?: Date | string | DateTimeFilter
+  updatedAt?: Date | string | DateTimeFilter
+  AND?: Enumerable<PostScalarWhereInput>
+  OR?: Array<PostScalarWhereInput>
+  NOT?: Enumerable<PostScalarWhereInput>
 }
 
 export type PostUpdateManyDataInput = {
-  id?: string | null
-  title?: string | null
-  category?: Category | null
-  published?: boolean | null
-  createdAt?: Date | string | null
-  updatedAt?: Date | string | null
+  id?: string
+  title?: string
+  category?: Category
+  published?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type PostUpdateManyWithWhereNestedInput = {
@@ -1268,75 +1307,75 @@ export type PostUpsertWithWhereUniqueWithoutAuthorInput = {
 }
 
 export type PostUpdateManyWithoutAuthorInput = {
-  create?: Enumerable<PostCreateWithoutAuthorInput> | null
-  connect?: Enumerable<PostWhereUniqueInput> | null
-  set?: Enumerable<PostWhereUniqueInput> | null
-  disconnect?: Enumerable<PostWhereUniqueInput> | null
-  delete?: Enumerable<PostWhereUniqueInput> | null
-  update?: Enumerable<PostUpdateWithWhereUniqueWithoutAuthorInput> | null
-  updateMany?: Enumerable<PostUpdateManyWithWhereNestedInput> | null
-  deleteMany?: Enumerable<PostScalarWhereInput> | null
-  upsert?: Enumerable<PostUpsertWithWhereUniqueWithoutAuthorInput> | null
+  create?: Enumerable<PostCreateWithoutAuthorInput>
+  connect?: Enumerable<PostWhereUniqueInput>
+  set?: Enumerable<PostWhereUniqueInput>
+  disconnect?: Enumerable<PostWhereUniqueInput>
+  delete?: Enumerable<PostWhereUniqueInput>
+  update?: Enumerable<PostUpdateWithWhereUniqueWithoutAuthorInput>
+  updateMany?: Enumerable<PostUpdateManyWithWhereNestedInput>
+  deleteMany?: Enumerable<PostScalarWhereInput>
+  upsert?: Enumerable<PostUpsertWithWhereUniqueWithoutAuthorInput>
 }
 
 export type UserUpdateInput = {
-  id?: string | null
+  id?: string
   name?: string | null
-  email?: string | null
-  password?: string | null
-  isAdmin?: boolean | null
-  refreshToken?: string | null
-  createdAt?: Date | string | null
-  updatedAt?: Date | string | null
-  posts?: PostUpdateManyWithoutAuthorInput | null
+  email?: string
+  password?: string
+  isAdmin?: boolean
+  refreshToken?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  posts?: PostUpdateManyWithoutAuthorInput
 }
 
 export type UserUpdateManyMutationInput = {
-  id?: string | null
+  id?: string
   name?: string | null
-  email?: string | null
-  password?: string | null
-  isAdmin?: boolean | null
-  refreshToken?: string | null
-  createdAt?: Date | string | null
-  updatedAt?: Date | string | null
+  email?: string
+  password?: string
+  isAdmin?: boolean
+  refreshToken?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type UserCreateWithoutPostsInput = {
-  id?: string | null
+  id?: string
   name?: string | null
   email: string
   password: string
-  isAdmin?: boolean | null
-  refreshToken?: string | null
-  createdAt?: Date | string | null
-  updatedAt?: Date | string | null
+  isAdmin?: boolean
+  refreshToken?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type UserCreateOneWithoutPostsInput = {
-  create?: UserCreateWithoutPostsInput | null
-  connect?: UserWhereUniqueInput | null
+  create?: UserCreateWithoutPostsInput
+  connect?: UserWhereUniqueInput
 }
 
 export type PostCreateInput = {
-  id?: string | null
+  id?: string
   title: string
-  category?: Category | null
-  published?: boolean | null
-  createdAt?: Date | string | null
-  updatedAt?: Date | string | null
+  category?: Category
+  published?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
   author: UserCreateOneWithoutPostsInput
 }
 
 export type UserUpdateWithoutPostsDataInput = {
-  id?: string | null
+  id?: string
   name?: string | null
-  email?: string | null
-  password?: string | null
-  isAdmin?: boolean | null
-  refreshToken?: string | null
-  createdAt?: Date | string | null
-  updatedAt?: Date | string | null
+  email?: string
+  password?: string
+  isAdmin?: boolean
+  refreshToken?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type UserUpsertWithoutPostsInput = {
@@ -1345,66 +1384,66 @@ export type UserUpsertWithoutPostsInput = {
 }
 
 export type UserUpdateOneRequiredWithoutPostsInput = {
-  create?: UserCreateWithoutPostsInput | null
-  connect?: UserWhereUniqueInput | null
-  update?: UserUpdateWithoutPostsDataInput | null
-  upsert?: UserUpsertWithoutPostsInput | null
+  create?: UserCreateWithoutPostsInput
+  connect?: UserWhereUniqueInput
+  update?: UserUpdateWithoutPostsDataInput
+  upsert?: UserUpsertWithoutPostsInput
 }
 
 export type PostUpdateInput = {
-  id?: string | null
-  title?: string | null
-  category?: Category | null
-  published?: boolean | null
-  createdAt?: Date | string | null
-  updatedAt?: Date | string | null
-  author?: UserUpdateOneRequiredWithoutPostsInput | null
+  id?: string
+  title?: string
+  category?: Category
+  published?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  author?: UserUpdateOneRequiredWithoutPostsInput
 }
 
 export type PostUpdateManyMutationInput = {
-  id?: string | null
-  title?: string | null
-  category?: Category | null
-  published?: boolean | null
-  createdAt?: Date | string | null
-  updatedAt?: Date | string | null
+  id?: string
+  title?: string
+  category?: Category
+  published?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type StringFilter = {
-  equals?: string | null
-  not?: string | StringFilter | null
-  in?: Enumerable<string> | null
-  notIn?: Enumerable<string> | null
-  lt?: string | null
-  lte?: string | null
-  gt?: string | null
-  gte?: string | null
-  contains?: string | null
-  startsWith?: string | null
-  endsWith?: string | null
+  equals?: string
+  not?: string | StringFilter
+  in?: Enumerable<string>
+  notIn?: Enumerable<string>
+  lt?: string
+  lte?: string
+  gt?: string
+  gte?: string
+  contains?: string
+  startsWith?: string
+  endsWith?: string
 }
 
 export type CategoryFilter = {
-  equals?: Category | null
-  not?: Category | CategoryFilter | null
-  in?: Enumerable<Category> | null
-  notIn?: Enumerable<Category> | null
+  equals?: Category
+  not?: Category | CategoryFilter
+  in?: Enumerable<Category>
+  notIn?: Enumerable<Category>
 }
 
 export type BooleanFilter = {
-  equals?: boolean | null
-  not?: boolean | BooleanFilter | null
+  equals?: boolean
+  not?: boolean | BooleanFilter
 }
 
 export type DateTimeFilter = {
-  equals?: Date | string | null
-  not?: Date | string | DateTimeFilter | null
-  in?: Enumerable<Date | string> | null
-  notIn?: Enumerable<Date | string> | null
-  lt?: Date | string | null
-  lte?: Date | string | null
-  gt?: Date | string | null
-  gte?: Date | string | null
+  equals?: Date | string
+  not?: Date | string | DateTimeFilter
+  in?: Enumerable<Date | string>
+  notIn?: Enumerable<Date | string>
+  lt?: Date | string
+  lte?: Date | string
+  gt?: Date | string
+  gte?: Date | string
 }
 
 export type NullableStringFilter = {
@@ -1422,9 +1461,9 @@ export type NullableStringFilter = {
 }
 
 export type PostFilter = {
-  every?: PostWhereInput | null
-  some?: PostWhereInput | null
-  none?: PostWhereInput | null
+  every?: PostWhereInput
+  some?: PostWhereInput
+  none?: PostWhereInput
 }
 
 export type UserOrderByInput = {

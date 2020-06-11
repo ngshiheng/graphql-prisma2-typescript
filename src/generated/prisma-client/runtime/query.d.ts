@@ -65,6 +65,7 @@ export declare class Arg {
     readonly isEnum: boolean;
     readonly schemaArg?: DMMF.SchemaArg;
     readonly argType?: DMMF.ArgType;
+    readonly isNullable: boolean;
     constructor({ key, value, argType, isEnum, error, schemaArg, }: ArgOptions);
     _toString(value: ArgValue, key: string): string | undefined;
     toString(): string;
@@ -96,5 +97,6 @@ export interface MapDatesOptions {
     data: any;
 }
 export declare function mapDates({ field, data }: MapDatesOptions): any;
+export declare function mapJson({ field, data }: MapDatesOptions): any;
 export declare function getField(document: Document, path: string[]): Field;
 export {};
