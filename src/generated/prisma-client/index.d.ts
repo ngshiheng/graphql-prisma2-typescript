@@ -26,7 +26,7 @@ export { sql, empty, join, raw }
 
 /**
  * Prisma Client JS version: 2.0.0
- * Query Engine version: de2bc1cbdb5561ad73d2f08463fa2eec48993f56
+ * Query Engine version: c88925ce44a9b89b4351aec85ba6a28979d2658e
  */
 export declare type PrismaVersion = {
   client: string
@@ -363,6 +363,41 @@ export declare const Category: {
 export declare type Category = (typeof Category)[keyof typeof Category]
 
 
+export declare const SortOrder: {
+  asc: 'asc',
+  desc: 'desc'
+};
+
+export declare type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export declare const UserDistinctFieldEnum: {
+  id: 'id',
+  name: 'name',
+  email: 'email',
+  password: 'password',
+  isAdmin: 'isAdmin',
+  refreshToken: 'refreshToken',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+export declare type UserDistinctFieldEnum = (typeof UserDistinctFieldEnum)[keyof typeof UserDistinctFieldEnum]
+
+
+export declare const PostDistinctFieldEnum: {
+  id: 'id',
+  title: 'title',
+  authorId: 'authorId',
+  category: 'category',
+  published: 'published',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+export declare type PostDistinctFieldEnum = (typeof PostDistinctFieldEnum)[keyof typeof PostDistinctFieldEnum]
+
+
 
 /**
  * Model User
@@ -641,7 +676,7 @@ export type FindManyUserArgs = {
   /**
    * Determine the order of the Users to fetch.
   **/
-  orderBy?: UserOrderByInput
+  orderBy?: Enumerable<UserOrderByInput>
   /**
    * Sets the position for listing Users.
   **/
@@ -654,6 +689,7 @@ export type FindManyUserArgs = {
    * Skip the first `n` Users.
   **/
   skip?: number
+  distinct?: Enumerable<UserDistinctFieldEnum>
 }
 
 
@@ -1053,7 +1089,7 @@ export type FindManyPostArgs = {
   /**
    * Determine the order of the Posts to fetch.
   **/
-  orderBy?: PostOrderByInput
+  orderBy?: Enumerable<PostOrderByInput>
   /**
    * Sets the position for listing Posts.
   **/
@@ -1066,6 +1102,7 @@ export type FindManyPostArgs = {
    * Skip the first `n` Posts.
   **/
   skip?: number
+  distinct?: Enumerable<PostDistinctFieldEnum>
 }
 
 
@@ -1195,6 +1232,107 @@ export type PostArgs = {
  */
 
 
+export type NestedStringFilter = {
+  equals?: string
+  in?: Enumerable<string>
+  lt?: string
+  lte?: string
+  gt?: string
+  gte?: string
+  contains?: string
+  startsWith?: string
+  endsWith?: string
+  not?: NestedStringFilter | null
+}
+
+export type StringFilter = {
+  equals?: string
+  not?: string | StringFilter
+  in?: Enumerable<string>
+  notIn?: Enumerable<string>
+  lt?: string
+  lte?: string
+  gt?: string
+  gte?: string
+  contains?: string
+  startsWith?: string
+  endsWith?: string
+}
+
+export type NestedStringNullableFilter = {
+  equals?: string | null
+  in?: Enumerable<string> | null
+  lt?: string | null
+  lte?: string | null
+  gt?: string | null
+  gte?: string | null
+  contains?: string | null
+  startsWith?: string | null
+  endsWith?: string | null
+  not?: NestedStringNullableFilter | null
+}
+
+export type StringNullableFilter = {
+  equals?: string | null
+  in?: Enumerable<string> | null
+  lt?: string | null
+  lte?: string | null
+  gt?: string | null
+  gte?: string | null
+  contains?: string | null
+  startsWith?: string | null
+  endsWith?: string | null
+  not?: NestedStringNullableFilter | null
+}
+
+export type NestedBoolFilter = {
+  equals?: boolean
+  not?: NestedBoolFilter | null
+}
+
+export type BoolFilter = {
+  equals?: boolean
+  not?: NestedBoolFilter | null
+}
+
+export type UserRelationFilter = {
+  is?: UserWhereInput | null
+  isNot?: UserWhereInput | null
+}
+
+export type NestedEnumCategoryFilter = {
+  equals?: Category
+  in?: Enumerable<Category>
+  not?: NestedEnumCategoryFilter | null
+}
+
+export type EnumCategoryFilter = {
+  equals?: Category
+  in?: Enumerable<Category>
+  not?: NestedEnumCategoryFilter | null
+}
+
+export type NestedDateTimeFilter = {
+  equals?: Date | string
+  in?: Enumerable<Date | string>
+  lt?: Date | string
+  lte?: Date | string
+  gt?: Date | string
+  gte?: Date | string
+  not?: NestedDateTimeFilter | null
+}
+
+export type DateTimeFilter = {
+  equals?: Date | string
+  not?: Date | string | DateTimeFilter
+  in?: Enumerable<Date | string>
+  notIn?: Enumerable<Date | string>
+  lt?: Date | string
+  lte?: Date | string
+  gt?: Date | string
+  gte?: Date | string
+}
+
 export type PostWhereInput = {
   id?: string | StringFilter
   title?: string | StringFilter
@@ -1206,7 +1344,13 @@ export type PostWhereInput = {
   AND?: Enumerable<PostWhereInput>
   OR?: Array<PostWhereInput>
   NOT?: Enumerable<PostWhereInput>
-  author?: UserWhereInput | null
+  author?: UserRelationFilter
+}
+
+export type PostListRelationFilter = {
+  every?: PostWhereInput
+  some?: PostWhereInput
+  none?: PostWhereInput
 }
 
 export type UserWhereInput = {
@@ -1224,9 +1368,30 @@ export type UserWhereInput = {
   NOT?: Enumerable<UserWhereInput>
 }
 
+export type UserOrderByInput = {
+  id?: SortOrder
+  name?: SortOrder
+  email?: SortOrder
+  password?: SortOrder
+  isAdmin?: SortOrder
+  refreshToken?: SortOrder
+  createdAt?: SortOrder
+  updatedAt?: SortOrder
+}
+
 export type UserWhereUniqueInput = {
   id?: string
   email?: string
+}
+
+export type PostOrderByInput = {
+  id?: SortOrder
+  title?: SortOrder
+  authorId?: SortOrder
+  category?: SortOrder
+  published?: SortOrder
+  createdAt?: SortOrder
+  updatedAt?: SortOrder
 }
 
 export type PostWhereUniqueInput = {
@@ -1256,7 +1421,7 @@ export type UserCreateInput = {
   refreshToken?: string
   createdAt?: Date | string
   updatedAt?: Date | string
-  posts?: PostCreateManyWithoutAuthorInput | null
+  posts?: PostCreateManyWithoutAuthorInput
 }
 
 export type PostUpdateWithoutAuthorDataInput = {
@@ -1313,7 +1478,7 @@ export type PostUpdateManyWithoutAuthorInput = {
   disconnect?: Enumerable<PostWhereUniqueInput>
   delete?: Enumerable<PostWhereUniqueInput>
   update?: Enumerable<PostUpdateWithWhereUniqueWithoutAuthorInput>
-  updateMany?: Enumerable<PostUpdateManyWithWhereNestedInput>
+  updateMany?: Enumerable<PostUpdateManyWithWhereNestedInput> | null
   deleteMany?: Enumerable<PostScalarWhereInput>
   upsert?: Enumerable<PostUpsertWithWhereUniqueWithoutAuthorInput>
 }
@@ -1409,20 +1574,6 @@ export type PostUpdateManyMutationInput = {
   updatedAt?: Date | string
 }
 
-export type StringFilter = {
-  equals?: string
-  not?: string | StringFilter
-  in?: Enumerable<string>
-  notIn?: Enumerable<string>
-  lt?: string
-  lte?: string
-  gt?: string
-  gte?: string
-  contains?: string
-  startsWith?: string
-  endsWith?: string
-}
-
 export type CategoryFilter = {
   equals?: Category
   not?: Category | CategoryFilter
@@ -1433,17 +1584,6 @@ export type CategoryFilter = {
 export type BooleanFilter = {
   equals?: boolean
   not?: boolean | BooleanFilter
-}
-
-export type DateTimeFilter = {
-  equals?: Date | string
-  not?: Date | string | DateTimeFilter
-  in?: Enumerable<Date | string>
-  notIn?: Enumerable<Date | string>
-  lt?: Date | string
-  lte?: Date | string
-  gt?: Date | string
-  gte?: Date | string
 }
 
 export type NullableStringFilter = {
@@ -1464,27 +1604,6 @@ export type PostFilter = {
   every?: PostWhereInput
   some?: PostWhereInput
   none?: PostWhereInput
-}
-
-export type UserOrderByInput = {
-  id?: OrderByArg | null
-  name?: OrderByArg | null
-  email?: OrderByArg | null
-  password?: OrderByArg | null
-  isAdmin?: OrderByArg | null
-  refreshToken?: OrderByArg | null
-  createdAt?: OrderByArg | null
-  updatedAt?: OrderByArg | null
-}
-
-export type PostOrderByInput = {
-  id?: OrderByArg | null
-  title?: OrderByArg | null
-  authorId?: OrderByArg | null
-  category?: OrderByArg | null
-  published?: OrderByArg | null
-  createdAt?: OrderByArg | null
-  updatedAt?: OrderByArg | null
 }
 
 /**

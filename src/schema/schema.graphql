@@ -4,8 +4,8 @@
 # -----------------------------------------------
 
 type AuthPayload {
-  token: String!
   refreshToken: String
+  token: String!
 }
 
 """
@@ -18,18 +18,18 @@ type MessagePayload {
 }
 
 type Mutation {
-  createPost(title: String!, category: PostCategory!, published: Boolean): Post!
-  updatePost(input: PostUpdateInput!, id: String!): Post!
+  createPost(category: PostCategory!, published: Boolean, title: String!): Post!
+  createUser(email: String!, isAdmin: Boolean, name: String, password: String!): User!
   deletePost(id: String!): Post!
-  createUser(email: String!, password: String!, name: String, isAdmin: Boolean): User!
-  register(email: String!, password: String!, name: String): User!
-  login(email: String!, password: String!): AuthPayload!
-  updateUser(input: UserUpdateInput!, id: String!): User!
   deleteUser(id: String!): User!
   deleteUsers: [User!]!
+  login(email: String!, password: String!): AuthPayload!
+  refreshLogin(refreshToken: String!): AuthPayload!
+  register(email: String!, name: String, password: String!): User!
   resetPassword(email: String!): MessagePayload!
   updatePassword(password: String!): MessagePayload!
-  refreshLogin(refreshToken: String!): AuthPayload!
+  updatePost(id: String!, input: PostUpdateInput!): Post!
+  updateUser(id: String!, input: UserUpdateInput!): User!
 }
 
 enum OrderByArg {
@@ -38,12 +38,12 @@ enum OrderByArg {
 }
 
 type Post {
-  id: ID!
-  title: String!
-  category: PostCategory
   author: User
-  published: Boolean
+  category: PostCategory
   createdAt: DateTime!
+  id: ID!
+  published: Boolean
+  title: String!
   updatedAt: DateTime!
 }
 
@@ -63,18 +63,18 @@ enum PostCategory {
 }
 
 input PostOrderByInput {
-  id: OrderByArg
-  title: OrderByArg
   category: OrderByArg
-  published: OrderByArg
   createdAt: OrderByArg
+  id: OrderByArg
+  published: OrderByArg
+  title: OrderByArg
   updatedAt: OrderByArg
 }
 
 input PostUpdateInput {
-  title: String
   category: PostCategory
   published: Boolean
+  title: String
 }
 
 input PostWhereUniqueInput {
@@ -82,39 +82,39 @@ input PostWhereUniqueInput {
 }
 
 type Query {
-  post(id: String!): Post!
-  posts(filter: String, skip: Float, orderBy: PostOrderByInput, after: PostWhereUniqueInput, before: PostWhereUniqueInput, first: Float, last: Float): [Post!]!
   me: User!
+  post(id: String!): Post!
+  posts(after: PostWhereUniqueInput, before: PostWhereUniqueInput, filter: String, first: Float, last: Float, orderBy: PostOrderByInput, skip: Float): [Post!]!
   user(id: String!): User!
-  users(filter: String, skip: Float, orderBy: UserOrderByInput, after: UserWhereUniqueInput, before: UserWhereUniqueInput, first: Float, last: Float): [User!]!
+  users(after: UserWhereUniqueInput, before: UserWhereUniqueInput, filter: String, first: Float, last: Float, orderBy: UserOrderByInput, skip: Float): [User!]!
 }
 
 type User {
-  id: ID!
-  name: String
-  email: String!
-  isAdmin: Boolean!
-  posts: [Post!]
   createdAt: DateTime!
+  email: String!
+  id: ID!
+  isAdmin: Boolean!
+  name: String
+  posts: [Post!]
   updatedAt: DateTime!
 }
 
 input UserOrderByInput {
-  id: OrderByArg
-  name: OrderByArg
-  email: OrderByArg
-  isAdmin: OrderByArg
   createdAt: OrderByArg
+  email: OrderByArg
+  id: OrderByArg
+  isAdmin: OrderByArg
+  name: OrderByArg
   updatedAt: OrderByArg
 }
 
 input UserUpdateInput {
   email: String
-  name: String
   isAdmin: Boolean
+  name: String
 }
 
 input UserWhereUniqueInput {
-  id: ID
   email: String
+  id: ID
 }
