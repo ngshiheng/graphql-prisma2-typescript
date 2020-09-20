@@ -85,11 +85,17 @@ const UPDATE_USER = gql`
 `;
 
 beforeAll(async () => {
-    await prisma.user.deleteMany({ where: { email } });
+    const userExist = await prisma.user.findOne({ where: { email } });
+    if (userExist) {
+        await prisma.user.delete({ where: { email } });
+    }
 });
 
 afterAll(async () => {
-    await prisma.user.deleteMany({ where: { email } });
+    const userExist = await prisma.user.findOne({ where: { email } });
+    if (userExist) {
+        await prisma.user.delete({ where: { email } });
+    }
     await prisma.disconnect();
 });
 

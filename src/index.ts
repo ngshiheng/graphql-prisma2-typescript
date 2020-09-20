@@ -4,6 +4,7 @@ import { Request } from 'express';
 import { resolve } from 'path';
 import 'reflect-metadata';
 import { buildSchema } from 'type-graphql';
+import { SERVER_PORT } from './utils/constants';
 
 export interface Context {
     prisma: PrismaClient;
@@ -23,8 +24,8 @@ const main = async () => {
         playground: true,
         context: ({ req }) => ({ req, prisma } as Context),
     });
-    await server.listen(process.env.PORT);
-    console.log(`🚀 Server is running on http://localhost:${process.env.PORT}`);
+    await server.listen(SERVER_PORT);
+    console.log(`🚀 Server is running on http://localhost:${SERVER_PORT}`);
 };
 
 main().catch(console.error);

@@ -7,7 +7,7 @@ jobs:
             PG_DB: $PG_DB
         docker:
             - image: circleci/node:12
-            - image: circleci/postgres:9.6-alpine-ram
+            - image: circleci/postgres:11-alpine
               environment:
                   DATABASE_URL: postgresql://postgres@localhost:5432/circle_test
         steps:
