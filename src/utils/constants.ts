@@ -18,6 +18,8 @@ export const GMAIL_USER: string = process.env.GMAIL!;
 
 export const GMAIL_PASSWORD: string = process.env.GMAIL_PASSWORD!;
 
+export const SERVER_PORT: string = process.env.SERVER_PORT || '4000';
+
 export const DEFAULT_LOGIN_QUERY = `# Enter your email and password to login to receive your access token
 mutation {
     login(email: "", password: "") {

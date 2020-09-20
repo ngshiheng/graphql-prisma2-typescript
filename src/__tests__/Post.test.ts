@@ -82,8 +82,11 @@ const DELETE_POST = gql`
 `;
 
 beforeAll(async () => {
-    await prisma.post.deleteMany({ where: { title: 'Integration Test Post' } });
-    await prisma.user.deleteMany({ where: { email } });
+    const userExist = await prisma.user.findOne({ where: { email } });
+    if (userExist) {
+        await prisma.user.delete({ where: { email } });
+    }
+
     await prisma.user.create({
         data: {
             email,
@@ -95,8 +98,16 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-    await prisma.post.deleteMany({ where: { id: postId } });
-    await prisma.user.deleteMany({ where: { email } });
+    const postExist = await prisma.post.findOne({ where: { id: postId } });
+    if (postExist) {
+        await prisma.post.delete({ where: { id: postId } });
+    }
+
+    const userExist = await prisma.user.findOne({ where: { email } });
+    if (userExist) {
+        await prisma.user.delete({ where: { email } });
+    }
+
     await prisma.disconnect();
 });
 
